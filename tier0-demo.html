@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>第0档·陪学功能 — 真实数据驱动（讲解 Demo）</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f2ece1;color:#2d1f10;padding:28px;}
+.wrap{max-width:1180px;margin:0 auto;}
+h1{font-size:26px;font-weight:900;margin-bottom:4px;}
+.sub{color:#8a7a6a;font-size:14px;margin-bottom:6px;}
+.legend{display:flex;gap:16px;font-size:12px;color:#7a6a5a;margin-bottom:20px;flex-wrap:wrap;}
+.legend b{display:inline-flex;align-items:center;gap:5px;font-weight:700;}
+.dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+.real{background:#2faa5a;}.calc{background:#e07b54;}.write{background:#5b8dd9;}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:20px;align-items:start;}
+@media(max-width:880px){.grid{grid-template-columns:1fr;}}
+.card{background:#fff;border-radius:20px;box-shadow:0 6px 24px rgba(0,0,0,.07);padding:20px;}
+.card h3{font-size:14px;color:#8a7a6a;letter-spacing:.5px;text-transform:uppercase;margin-bottom:14px;}
+/* room mock */
+.room{background:linear-gradient(180deg,#3a261b 0 12%,#b6863f 12% 100%);border-radius:16px;padding:16px;position:relative;overflow:hidden;}
+.online{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#fff;border-radius:20px;padding:7px 16px;font-size:13px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:3;}
+.online .tag{font-size:10px;color:#2faa5a;font-weight:700;}
+.people{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:46px;}
+.p{background:rgba(255,255,255,.96);border-radius:14px;padding:12px;cursor:pointer;position:relative;transition:.15s;}
+.p:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(0,0,0,.25);}
+.p.me{outline:3px solid #4ecdc4;}
+.p-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.face{width:38px;height:38px;border-radius:50%;background:#f0e8de;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.p-n{font-size:14px;font-weight:800;}
+.p-h{font-size:11px;color:#a0876a;}
+.p-stat{font-size:11px;color:#5a4a3a;line-height:1.5;}
+.p-stat b{color:#e07b54;}
+.p-live{display:inline-block;margin-top:5px;font-size:10px;font-weight:700;color:#2faa5a;background:#e7f6ec;border-radius:8px;padding:2px 7px;}
+.realtag{position:absolute;top:8px;right:8px;font-size:9px;font-weight:700;color:#2faa5a;background:#e7f6ec;border-radius:6px;padding:2px 6px;}
+.btn{display:inline-block;margin-top:16px;background:#e07b54;color:#fff;border:none;border-radius:12px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn:hover{background:#c96440;}
+/* db panel */
+.db{background:#1e1e28;color:#d8d8e0;border-radius:14px;padding:14px 16px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;line-height:1.7;overflow-x:auto;margin-bottom:14px;}
+.db .k{color:#c792ea;}.db .s{color:#c3e88d;}.db .n{color:#f78c6c;}.db .c{color:#637777;}
+.note{font-size:13px;color:#6a5a4a;line-height:1.7;background:#fbf4e8;border-left:3px solid #e0a060;border-radius:8px;padding:12px 14px;margin-top:12px;}
+.flash{animation:fl 1.2s ease;}
+@keyframes fl{0%{background:#fff6cc;}100%{background:transparent;}}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
+.tbl th,.tbl td{border:1px solid #ece0d0;padding:6px 8px;text-align:left;}
+.tbl th{background:#f7efe2;color:#8a7a6a;font-weight:700;}
+.tbl tr.mine td{background:#eafaf0;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>第 0 档 · 「一起专注」功能</h1>
+  <div class="sub">界面和你现在的 demo 一样 —— 区别全在背后：房间里的人和数字都是你们 App 的<b>真实用户数据</b>，不是写死的假人。下面把"真实"标出来给你看。</div>
+  <div class="legend">
+    <b><span class="dot real"></span>真实数据（从数据库读）</b>
+    <b><span class="dot calc"></span>实时计算（一句 SQL）</b>
+    <b><span class="dot write"></span>会写回数据库</b>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: the room as the user sees it -->
+    <div class="card">
+      <h3>用户看到的房间</h3>
+      <div class="room">
+        <div class="online">🟢 正在学习 <b id="cnt">8,432</b> 人 <span class="tag">· 真实在学人数</span></div>
+        <div class="people" id="people"></div>
+      </div>
+      <button class="btn" onclick="simulate()">▶ 模拟「我」专注 25 分钟</button>
+      <div class="note" id="note">👆 点上面按钮，看一次真实专注是怎么写进数据库、并让房间和人数"活"起来的。</div>
+    </div>
+
+    <!-- RIGHT: what powers it -->
+    <div class="card">
+      <h3>背后的数据（同一块屏幕的真相）</h3>
+
+      <div style="font-size:13px;font-weight:700;margin-bottom:6px;">① 在线人数 = 一句 SQL</div>
+      <div class="db"><span class="c">-- 最近15分钟有专注记录的真实用户数</span><br>
+      <span class="k">select</span> count(<span class="k">distinct</span> user_id)<br>
+      <span class="k">from</span> study_sessions<br>
+      <span class="k">where</span> started_at > now() <span class="n">- interval '15 min'</span>;</div>
+
+      <div style="font-size:13px;font-weight:700;margin:14px 0 6px;">② 房间里的人 = 真实用户快照</div>
+      <div class="db"><span class="c">-- 取最近在学的真实用户，读他们的资料</span><br>
+      <span class="k">select</span> name, country, avatar_cfg,<br>
+      &nbsp;&nbsp;streak, total_hours, current_task, goal<br>
+      <span class="k">from</span> profiles <span class="k">join</span> study_sessions ...<br>
+      <span class="k">order by</span> last_active <span class="k">desc limit</span> <span class="n">6</span>;</div>
+
+      <div style="font-size:13px;font-weight:700;margin:14px 0 6px;">③ 你专注结束 = 写一条记录</div>
+      <div class="db" id="insertbox"><span class="k">insert into</span> study_sessions<br>
+      &nbsp;&nbsp;(user_id, scene, minutes, started_at)<br>
+      <span class="k">values</span> (<span class="s">'me'</span>, <span class="s">'图书馆'</span>, <span class="n">25</span>, now());</div>
+
+      <div style="font-size:13px;font-weight:700;margin:14px 0 6px;">数据库里 study_sessions 表（节选）</div>
+      <table class="tbl" id="tbl">
+        <tr><th>user</th><th>场景</th><th>分钟</th><th>时间</th></tr>
+      </table>
+      <div class="note" style="margin-top:14px">只需新增/复用 3 张表：<b>profiles</b>（加 avatar_cfg/goal/streak 几列）、<b>study_sessions</b>（学习记录，可能你们已有）、<b>follows</b>（好友）。<br>不需要 WebSocket、不需要实时服务器 —— 纯靠"查真实用户快照"就让房间活起来。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// 真实用户快照（演示用，实际从 profiles 表读）
+const USERS=[
+  {face:'🧑‍🎓',name:'Yuki', flag:'🇯🇵',h:210,streak:33,task:'AI 伦理论文', ago:'2分钟前在学'},
+  {face:'👩‍💼',name:'Chen', flag:'🇨🇳',h:301,streak:47,task:'产品需求文档', ago:'刚刚在学'},
+  {face:'🧑‍💻',name:'Alex', flag:'🇺🇸',h:74, streak:8, task:'Unity 游戏开发',ago:'5分钟前在学'},
+  {face:'👩‍🎨',name:'Laura',flag:'🇧🇷',h:128,streak:21,task:'西语翻译练习', ago:'刚刚在学'},
+  {face:'🧑',  name:'민준', flag:'🇰🇷',h:96, streak:14,task:'CPA 备考',    ago:'8分钟前在学'},
+];
+const me={face:'🙋',name:'我 (你)',flag:'🇨🇳',h:0,streak:1,task:'Study',ago:'此刻'};
+let onlineCnt=8432;
+function render(extraMe){
+  const box=document.getElementById('people');box.innerHTML='';
+  const list=extraMe?[me,...USERS.slice(0,5)]:USERS;
+  list.forEach(u=>{
+    const isMe=u.name.startsWith('我');
+    const d=document.createElement('div');d.className='p'+(isMe?' me':'');
+    d.innerHTML=`<div class="realtag">${isMe?'你':'真实用户'}</div>
+      <div class="p-top"><div class="face">${u.face}</div><div><div class="p-n">${u.flag} ${u.name}</div><div class="p-h">@${u.name.toLowerCase().replace(/[^a-z]/g,'')||'me'}</div></div></div>
+      <div class="p-stat">已专注 <b>${u.h}h</b> · 连续 <b>${u.streak}</b> 天<br>正在：${u.task}</div>
+      <div class="p-live">🟢 ${u.ago}</div>`;
+    box.appendChild(d);
+  });
+}
+render(false);
+// table rows
+const rows=[
+  ['yuki','图书馆','45','21:02'],
+  ['chen','咖啡馆','60','21:05'],
+  ['alex','列车','30','21:09'],
+];
+function renderTbl(mine){
+  const t=document.getElementById('tbl');
+  t.innerHTML='<tr><th>user</th><th>场景</th><th>分钟</th><th>时间</th></tr>'+
+    rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join('')+
+    (mine?'<tr class="mine"><td>me</td><td>图书馆</td><td>25</td><td>刚刚</td></tr>':'');
+}
+renderTbl(false);
+function simulate(){
+  // 1) write row
+  document.getElementById('insertbox').classList.add('flash');
+  renderTbl(true);
+  // 2) online count +1
+  onlineCnt++;document.getElementById('cnt').textContent=onlineCnt.toLocaleString();
+  document.getElementById('cnt').parentElement.classList.add('flash');
+  // 3) me appears in room
+  me.h=0.4;render(true);
+  document.getElementById('note').innerHTML='✅ 发生了三件事：<b style="color:#5b8dd9">写入</b>一条专注记录 → 在线人数 <b style="color:#e07b54">+1</b> → 「我」出现在房间里，并计入我的学习时长。<br>别人下次进房间，也可能在快照里看到「我」。这就是第 0 档 —— <b>真人、真数据、异步呈现，体感却像有人陪</b>。';
+  setTimeout(()=>{document.getElementById('insertbox').classList.remove('flash');document.getElementById('cnt').parentElement.classList.remove('flash');},1200);
+}
+</script>
+</body>
+</html>
