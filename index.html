@@ -74,7 +74,7 @@ body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f5f0e
 .scenes-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;}
 .scenes-header h2{font-size:24px;font-weight:800;color:#2d1f10;}
 .scenes-header span{font-size:14px;color:#a09080;}
-.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:24px;}
 
 .scene-card{
   background:#fff;border-radius:20px;overflow:hidden;
@@ -752,6 +752,27 @@ input[type=range]::-webkit-slider-thumb{
           <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
         </div>
       </div>
+
+      <div class="scene-card" onclick="selectScene(3)">
+        <div class="card-visual" style="background:linear-gradient(160deg,#f8e2cc,#f0c9a0)">
+          <img class="card-img" src="catcafe.webp" alt="猫咪咖啡馆"/>
+          <div class="card-live" data-i18n="live_tag">LIVE 现场</div>
+          <button class="card-mute" onclick="toggleCardMute(this,event)">🔊</button>
+        </div>
+        <div class="card-body">
+          <div class="card-meta">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="card-avatars" id="av-3"></div>
+              <div class="card-count">👥 <span id="cnt-3">612</span></div>
+            </div>
+            <div class="card-flags">🐱🇯🇵🇰🇷🇺🇸</div>
+          </div>
+          <div class="card-title" data-i18n="sc3_n">猫咪咖啡馆</div>
+          <div class="card-sub" data-i18n="sc3_s">Cat Café · 治愈陪伴</div>
+          <div class="card-rooms">● 88 <span data-i18n="rooms_n">间教室</span></div>
+          <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -792,6 +813,7 @@ input[type=range]::-webkit-slider-thumb{
             <div class="sel-dot active" id="dot-0" onclick="setScene(0)"></div>
             <div class="sel-dot" id="dot-1" onclick="setScene(1)"></div>
             <div class="sel-dot" id="dot-2" onclick="setScene(2)"></div>
+            <div class="sel-dot" id="dot-3" onclick="setScene(3)"></div>
           </div>
           <button class="sel-arr" onclick="nextScene()">›</button>
         </div>
@@ -1125,6 +1147,8 @@ const I18N={
   sc1_s:{zh:'Café · 温暖热闹',en:'Café · Warm & lively',ja:'カフェ · 暖かく賑やか',ko:'카페 · 따뜻하고 활기찬'},
   sc2_n:{zh:'汤泉中心',en:'Hot Spring',ja:'温泉センター',ko:'온천 센터'},
   sc2_s:{zh:'Hot Spring · 放松专注',en:'Hot Spring · Relax & focus',ja:'温泉 · リラックス集中',ko:'온천 · 편안한 집중'},
+  sc3_n:{zh:'猫咪咖啡馆',en:'Cat Café',ja:'猫カフェ',ko:'고양이 카페'},
+  sc3_s:{zh:'Cat Café · 治愈陪伴',en:'Cat Café · Cozy company',ja:'猫カフェ · 癒しの時間',ko:'고양이 카페 · 힐링'},
 };
 const LANGS=[['zh','中'],['en','EN'],['ja','日'],['ko','한']];
 let lang='zh';try{const l=localStorage.getItem('fw_lang');if(l)lang=l;}catch(e){}
@@ -1154,6 +1178,7 @@ const SCENES=[
   {flag:'📚',name:'图书馆',img:'library.webp?v=2', room:'room_studyhall.webp?v=1', seatBg:'room_library.webp?v=1', seatChairs:'library', tint:'transparent', cnt:21870,need:0},
   {flag:'☕',name:'咖啡厅',img:'cafe.webp?v=4',    room:'room_cafe.webp?v=4',      seatBg:'seat_cafe.webp?v=2', seatChairs:'cafe', tint:'transparent', cnt:8430, need:3},
   {flag:'♨️',name:'汤泉中心',img:'onsen.webp?v=2', room:'room_onsen.webp?v=2',     seatBg:'seat_onsen.webp', seatChairs:'onsen', tint:'transparent', cnt:5290, need:3},
+  {flag:'🐱',name:'猫咪咖啡馆',img:'catcafe.webp', room:'room_catcafe.webp', seatBg:'seat_catcafe.webp', seatChairs:'catcafe', tint:'transparent', cnt:6120, need:3},
 ];
 let sceneIdx=0;
 // invited friends per scene (persisted) — invite enough to unlock a scene
@@ -1289,8 +1314,9 @@ loadProfile();
 
 /* ─── INIT ─── */
 // card avatars (mini CSS avatars)
-[[FAKE[0],FAKE[1],FAKE[2]],[FAKE[3],FAKE[1],FAKE[4]],[FAKE[2],FAKE[5],FAKE[0]]].forEach((l,i)=>{
+[[FAKE[0],FAKE[1],FAKE[2]],[FAKE[3],FAKE[1],FAKE[4]],[FAKE[2],FAKE[5],FAKE[0]],[FAKE[1],FAKE[4],FAKE[3]]].forEach((l,i)=>{
   const el=document.getElementById('av-'+i);
+  if(!el)return;
   l.forEach(u=>{
     const d=document.createElement('div');d.className='card-av';d.style.cssText='background:#f0e8de;border:2.5px solid #fff;margin-left:-8px;overflow:hidden;width:30px;height:30px;position:relative;';
     const a=avNode(u.cfg);a.style.cssText='position:absolute;top:2px;left:50%;transform:translateX(-50%) scale(.34);transform-origin:top center;';
@@ -1439,8 +1465,8 @@ function updateSceneUI(){
   if(locked){cta.textContent=`${t('unlock_cta')} (${sceneFriends[sceneIdx]}/${s.need}) →`;cta.onclick=inviteFriend;cta.classList.add('locked');}
   else{cta.textContent=t('start_focus');cta.onclick=enterScene;cta.classList.remove('locked');}
 }
-function nextScene(){sceneIdx=(sceneIdx+1)%3;updateSceneUI();}
-function prevScene(){sceneIdx=(sceneIdx+2)%3;updateSceneUI();}
+function nextScene(){sceneIdx=(sceneIdx+1)%SCENES.length;updateSceneUI();}
+function prevScene(){sceneIdx=(sceneIdx-1+SCENES.length)%SCENES.length;updateSceneUI();}
 function setScene(i){sceneIdx=i;updateSceneUI();}
 
 /* ─── LOADING ─── */
@@ -1499,7 +1525,12 @@ const CHAIRS_LIBRARY=[
   {x:29,y:53,row:'side'},{x:37,y:53,row:'side'}, // 左桌近端（坐人）
   {x:62,y:53,row:'side'},{x:70,y:53,row:'side'}, // 右桌近端
 ];
-const CHAIRSETS={cafe:CHAIRS_CAFE, onsen:CHAIRS_ONSEN, library:CHAIRS_LIBRARY};
+// 猫咪咖啡馆：坐标来自图3紫框（5 个位置）
+const CHAIRS_CATCAFE=[
+  {x:42,y:29,row:'top'}, {x:75,y:44,row:'top'}, {x:65,y:63,row:'top'},  // 空位
+  {x:45,y:53,row:'side'},{x:23,y:57,row:'side'},                         // 坐人
+];
+const CHAIRSETS={cafe:CHAIRS_CAFE, onsen:CHAIRS_ONSEN, library:CHAIRS_LIBRARY, catcafe:CHAIRS_CATCAFE};
 function buildSeats(){
   const ic=document.getElementById('iso-chars');
   const is=document.getElementById('iso-seats');
@@ -1590,7 +1621,14 @@ function buildRoom(){
     [83,32,.64,0,false],
     [38,23,.67,1,false],
   ];
-  const LAYOUTS={cafe:CAFE_LAYOUT, onsen:ONSEN_LAYOUT};
+  // 猫咪咖啡馆房间：坐标来自图5紫点（4 个）
+  const CATCAFE_LAYOUT=[
+    [42,34,.58,-1,true ], // 我
+    [70,40,.56,0,false],
+    [27,34,.58,1,false],
+    [57,32,.60,2,false],
+  ];
+  const LAYOUTS={cafe:CAFE_LAYOUT, onsen:ONSEN_LAYOUT, catcafe:CATCAFE_LAYOUT};
   const layout = LAYOUTS[SCENES[sceneIdx].seatChairs] || DEFAULT_LAYOUT;
   const seats=layout.map(([lp,bp,sc,idx,back])=>[lp,bp,sc,(idx<0?me:FAKE[idx]),back]);
   roomPeople=seats.map(s=>s[3]);
