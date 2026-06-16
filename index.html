@@ -1184,6 +1184,7 @@ let sceneIdx=0;
 // invited friends per scene (persisted) — invite enough to unlock a scene
 let sceneFriends=[0,0,0];
 try{const f=JSON.parse(localStorage.getItem('fw_friends'));if(Array.isArray(f))sceneFriends=f;}catch(e){}
+while(sceneFriends.length<SCENES.length)sceneFriends.push(0); // 补齐到场景数，避免 undefined
 function sceneUnlocked(i){return sceneFriends[i]>=SCENES[i].need;}
 function saveFriends(){try{localStorage.setItem('fw_friends',JSON.stringify(sceneFriends));}catch(e){}}
 function inviteFriend(){
@@ -1645,7 +1646,16 @@ function buildRoom(){
   chatInt=setInterval(()=>{addChat(CHAT_POOL[chatIdx%CHAT_POOL.length]);chatIdx++;},3500);
   // timer
   timerSec=0;clearInterval(timerInt);updateTimer();
-  timerInt=setInterval(()=>{timerSec++;updateTimer();if(timerSec>=myMins*60)clearInterval(timerInt);},1000);
+  timerInt=setInterval(()=>{timerSec++;updateTimer();if(timerSec>=myMins*60){clearInterval(timerInt);onTimerDone();}},1000);
+}
+/* ─── 计时结束提示音（Web Audio 合成，无需音频文件） ─── */
+let endChimeOn=true, chimeEl=null;
+function playChime(){
+  try{ if(!chimeEl){chimeEl=new Audio('sounds/chime.mp3');} chimeEl.currentTime=0; chimeEl.play().catch(()=>{}); }catch(e){}
+}
+function onTimerDone(){
+  if(endChimeOn)playChime();
+  document.querySelector('#page-room .tp-tag')&&(document.getElementById('tp-time').textContent='00:00');
 }
 function makeRChar(u,isMe,lp,back,pidx){
   const w=document.createElement('div');w.className='rchar';
@@ -1798,7 +1808,7 @@ function renderAmb(){
       <div class="amb-row"><div class="amb-row-top"><span class="amb-row-ic">🔊</span><span class="amb-row-n">${t('amb_master')}</span><span class="amb-row-v">${masterVol}%</span></div>
         <input type="range" min="0" max="100" value="${masterVol}" oninput="onMasterSlide(this.value,this)"></div>
       <label class="amb-setrow"><span>${t('amb_autoplay')}</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
-      <label class="amb-setrow"><span>${t('amb_endtone')}</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
+      <label class="amb-setrow"><span>${t('amb_endtone')}</span><span class="amb-switch"><input type="checkbox" ${endChimeOn?'checked':''} onchange="endChimeOn=this.checked;if(this.checked)playChime()"><span></span></span></label>
       <label class="amb-setrow"><span>${t('amb_dark')}</span><span class="amb-switch"><input type="checkbox"><span></span></span></label>
       <p style="font-size:12px;color:#b0a090;margin-top:14px;line-height:1.6">${t('amb_note')}</p>`;
   }
