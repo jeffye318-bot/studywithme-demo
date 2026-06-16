@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>3D 自习室 — 原型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;font-family:'PingFang SC',system-ui,sans-serif;background:#1a120b;}
+#c{display:block;width:100vw;height:100vh;}
+.hud{position:fixed;left:0;right:0;top:0;text-align:center;padding:20px;pointer-events:none;}
+.hud h1{color:#fff;font-size:26px;font-weight:900;text-shadow:0 3px 14px rgba(0,0,0,.6);}
+.hud p{color:#ffe9d0;font-size:14px;margin-top:4px;text-shadow:0 2px 8px rgba(0,0,0,.6);}
+.tip{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);
+  border-radius:16px;padding:12px 22px;font-size:14px;font-weight:600;color:#3d2c1e;box-shadow:0 6px 24px rgba(0,0,0,.3);}
+.tip b{color:#e07b54;}
+.loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;background:#1a120b;z-index:5;}
+.toolbar{position:fixed;top:16px;right:16px;display:flex;gap:8px;}
+.toolbar button{background:rgba(255,255,255,.9);border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:700;color:#3d2c1e;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.25);}
+</style>
+</head>
+<body>
+<div class="loading" id="loading">加载 3D 场景…</div>
+<canvas id="c"></canvas>
+<div class="hud"><h1>3D 自习室 · 原型</h1><p>拖动旋转视角 · 滚轮缩放 · 点发光的空椅子坐下</p></div>
+<div class="toolbar"><button onclick="resetView()">↺ 复位视角</button></div>
+<div class="tip" id="tip">点一张<b>发光的空椅子</b>坐下 🪑</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const canvas=document.getElementById('c');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color('#241a12');
+scene.fog=new THREE.Fog('#241a12',18,38);
+
+const camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100);
+const CAM0=new THREE.Vector3(0,9,13);
+camera.position.copy(CAM0);
+
+const controls=new OrbitControls(camera,canvas);
+controls.target.set(0,1.2,0);
+controls.enableDamping=true;controls.dampingFactor=.08;
+controls.minDistance=6;controls.maxDistance=24;controls.maxPolarAngle=Math.PI/2.15;
+window.resetView=()=>{camera.position.copy(CAM0);controls.target.set(0,1.2,0);};
+
+// ── lights ──
+scene.add(new THREE.HemisphereLight('#fff0dd','#3a2a1a',0.9));
+const key=new THREE.DirectionalLight('#ffd9a0',1.1);key.position.set(6,12,8);key.castShadow=true;
+key.shadow.mapSize.set(1024,1024);key.shadow.camera.near=1;key.shadow.camera.far=40;
+key.shadow.camera.left=-15;key.shadow.camera.right=15;key.shadow.camera.top=15;key.shadow.camera.bottom=-15;
+scene.add(key);
+// warm pendant glows
+[[-4,0],[4,0]].forEach(([x,z])=>{const p=new THREE.PointLight('#ffb060',0.7,14);p.position.set(x,5,z);scene.add(p);});
+
+// ── floor ──
+const floorMat=new THREE.MeshStandardMaterial({color:'#9a6b3a',roughness:.9});
+const floor=new THREE.Mesh(new THREE.BoxGeometry(26,0.4,22),floorMat);
+floor.position.y=-0.2;floor.receiveShadow=true;scene.add(floor);
+// rug
+const rug=new THREE.Mesh(new THREE.BoxGeometry(10,0.05,16),new THREE.MeshStandardMaterial({color:'#7a3b30',roughness:1}));
+rug.position.y=0.03;rug.receiveShadow=true;scene.add(rug);
+// walls
+const wallMat=new THREE.MeshStandardMaterial({color:'#3a2418',roughness:1});
+function wall(w,h,d,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wallMat);m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);}
+wall(26,9,0.5,0,4.3,-11);   // back
+wall(0.5,9,22,-13,4.3,0);   // left
+wall(0.5,9,22,13,4.3,0);    // right
+// bookshelf stripes on back wall
+for(let i=0;i<22;i++){const c=['#c07838','#5a8a3a','#9a4a8a','#d4a830','#5a6a9a','#e07850'][i%6];
+  const b=new THREE.Mesh(new THREE.BoxGeometry(0.7,1.2+Math.random()*0.8,0.3),new THREE.MeshStandardMaterial({color:c,roughness:.8}));
+  b.position.set(-11+i,6.2,-10.7);scene.add(b);}
+
+// ── furniture helpers ──
+const woodMat=new THREE.MeshStandardMaterial({color:'#a9824c',roughness:.7});
+const woodDark=new THREE.MeshStandardMaterial({color:'#6f4a22',roughness:.8});
+function makeTable(x,z){
+  const g=new THREE.Group();
+  const top=new THREE.Mesh(new THREE.BoxGeometry(3,0.25,2),woodMat);top.position.y=1.4;top.castShadow=true;top.receiveShadow=true;g.add(top);
+  [[-1.3,-0.8],[1.3,-0.8],[-1.3,0.8],[1.3,0.8]].forEach(([lx,lz])=>{const leg=new THREE.Mesh(new THREE.BoxGeometry(0.18,1.4,0.18),woodDark);leg.position.set(lx,0.7,lz);leg.castShadow=true;g.add(leg);});
+  // a laptop + cup on the table
+  const lap=new THREE.Mesh(new THREE.BoxGeometry(0.7,0.05,0.5),new THREE.MeshStandardMaterial({color:'#444'}));lap.position.set(0,1.55,0);g.add(lap);
+  g.position.set(x,0,z);scene.add(g);return g;
+}
+function makeChair(x,z,rot){
+  const g=new THREE.Group();
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.18,0.9),woodMat);seat.position.y=0.7;seat.castShadow=true;g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.9,0.16),woodMat);back.position.set(0,1.15,-0.37);back.castShadow=true;g.add(back);
+  [[-0.35,-0.35],[0.35,-0.35],[-0.35,0.35],[0.35,0.35]].forEach(([lx,lz])=>{const leg=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.7,0.12),woodDark);leg.position.set(lx,0.35,lz);g.add(leg);});
+  g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);return g;
+}
+
+// ── chibi avatar (low-poly) ──
+function makeAvatar(skin,hair,outfit){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.5,0.95,16),new THREE.MeshStandardMaterial({color:outfit,roughness:.7}));
+  body.position.y=1.15;body.castShadow=true;g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.46,24,24),new THREE.MeshStandardMaterial({color:skin,roughness:.8}));
+  head.position.y=1.95;head.castShadow=true;g.add(head);
+  const hairM=new THREE.Mesh(new THREE.SphereGeometry(0.49,24,24,0,Math.PI*2,0,Math.PI*0.62),new THREE.MeshStandardMaterial({color:hair,roughness:.9}));
+  hairM.position.y=1.98;g.add(hairM);
+  // eyes
+  const eyeMat=new THREE.MeshStandardMaterial({color:'#2a1a10'});
+  [-0.16,0.16].forEach(ex=>{const e=new THREE.Mesh(new THREE.SphereGeometry(0.06,12,12),eyeMat);e.position.set(ex,1.97,0.42);g.add(e);});
+  return g;
+}
+const SKINS=['#F8D9C4','#F0C29E','#E0A878','#C68642'];
+const HAIRS=['#2A1D12','#8B5A2B','#1a1a1a','#B5513A','#d94f8a'];
+const OUTFITS=['#e07b54','#5b8dd9','#27ae60','#e91e8c','#f39c12','#16a085'];
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+
+// ── layout: 2 tables, 4 chairs each ──
+const seats=[]; // {chair, x, z, rot, occupied, mesh}
+function addTableWithChairs(tx,tz){
+  makeTable(tx,tz);
+  const spots=[ [tx-1.0,tz-1.7,0],[tx+1.0,tz-1.7,0],[tx-1.0,tz+1.7,Math.PI],[tx+1.0,tz+1.7,Math.PI] ];
+  spots.forEach(([sx,sz,rot])=>{makeChair(sx,sz,rot);seats.push({x:sx,z:sz,rot,occupied:false,glow:null});});
+}
+addTableWithChairs(-4,-1);
+addTableWithChairs(4,-1);
+
+// seat some chairs with fake avatars
+const taken=[0,2,5];
+taken.forEach(i=>{
+  const s=seats[i];s.occupied=true;
+  const av=makeAvatar(rnd(SKINS),rnd(HAIRS),rnd(OUTFITS));
+  av.position.set(s.x,0,s.z);av.rotation.y=s.rot;
+  // lower to sitting height
+  av.position.y=-0.25;scene.add(av);s.mesh=av;
+});
+
+// glowing markers on empty seats
+const glowMat=new THREE.MeshBasicMaterial({color:'#fff6cc',transparent:true,opacity:.9});
+seats.forEach(s=>{
+  if(s.occupied)return;
+  const ring=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.08,24),glowMat);
+  ring.position.set(s.x,0.82,s.z);ring.userData.seat=s;s.glow=ring;scene.add(ring);
+});
+
+// YOU avatar (hidden until you sit)
+const you=makeAvatar('#F0C29E','#33241a','#4ecdc4');
+you.visible=false;scene.add(you);
+// a "YOU" floating tag
+const tagCanvas=document.createElement('canvas');tagCanvas.width=128;tagCanvas.height=64;
+const tctx=tagCanvas.getContext('2d');tctx.fillStyle='#4ecdc4';tctx.roundRect?tctx.roundRect(14,14,100,36,12):tctx.fillRect(14,14,100,36);tctx.fill();
+tctx.fillStyle='#fff';tctx.font='bold 26px sans-serif';tctx.textAlign='center';tctx.fillText('YOU',64,40);
+const tagTex=new THREE.CanvasTexture(tagCanvas);
+const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex,transparent:true}));
+tag.scale.set(1.4,0.7,1);tag.visible=false;scene.add(tag);
+
+// ── raycast click to sit ──
+const ray=new THREE.Raycaster(), mouse=new THREE.Vector2();
+let seated=false;
+canvas.addEventListener('pointerdown',e=>{
+  if(seated)return;
+  mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;
+  ray.setFromCamera(mouse,camera);
+  const hits=ray.intersectObjects(seats.filter(s=>s.glow).map(s=>s.glow));
+  if(hits.length){
+    const s=hits[0].object.userData.seat;
+    you.position.set(s.x,-0.25,s.z);you.rotation.y=s.rot;you.visible=true;
+    tag.position.set(s.x,2.9,s.z);tag.visible=true;
+    s.glow.visible=false;s.occupied=true;seated=true;
+    document.getElementById('tip').innerHTML='✅ 你已坐下 · 拖动看看整个房间';
+    // ease camera closer to you
+    controls.target.set(s.x,1.4,s.z);
+  }
+});
+
+// ── animate ──
+let t=0;
+function tick(){
+  t+=0.03;
+  // glowing seats pulse + spin
+  seats.forEach((s,i)=>{if(s.glow&&s.glow.visible){s.glow.material.opacity=.55+Math.abs(Math.sin(t+i))*0.4;s.glow.rotation.y+=0.02;}});
+  controls.update();
+  renderer.render(scene,camera);
+  requestAnimationFrame(tick);
+}
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+addEventListener('resize',resize);resize();
+document.getElementById('loading').style.display='none';
+tick();
+</script>
+</body>
+</html>

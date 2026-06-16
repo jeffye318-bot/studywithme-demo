@@ -12,13 +12,19 @@ body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f5f0e
 .page{display:none;min-height:100vh;}
 .page.active{display:block;}
 /* full-screen pages use visibility so fixed children also hide/show */
-#page-loading,#page-seats,#page-setup,#page-room{
+#page-loading,#page-seats,#page-setup,#page-room,#page-3d{
   display:block;visibility:hidden;pointer-events:none;
   position:fixed;inset:0;z-index:100;
 }
-#page-loading.active,#page-seats.active,#page-setup.active,#page-room.active{
+#page-loading.active,#page-seats.active,#page-setup.active,#page-room.active,#page-3d.active{
   visibility:visible;pointer-events:auto;
 }
+#page-3d{background:#241a12;}
+#r3d-canvas{position:fixed;inset:0;width:100vw;height:100vh;display:block;}
+#r3d-setup{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#f8f0e4;border-radius:22px;padding:18px 22px;box-shadow:0 12px 40px rgba(0,0,0,.4);text-align:center;z-index:30;width:300px;}
+#r3d-setup .s3-time{font-size:40px;font-weight:900;color:#2d1f10;}
+#r3d-setup input[type=range]{width:100%;margin:10px 0;}
+#r3d-setup .s3-go{width:100%;padding:13px;border:none;border-radius:14px;background:linear-gradient(135deg,#5a9aff,#3a7aee);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;}
 
 /* ══════════ PAGE 1: LANDING ══════════ */
 #page-home{background:#f5f0e8;}
@@ -34,6 +40,9 @@ body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f5f0e
 .btn-ghost:hover{border-color:#e07b54;color:#e07b54;}
 .btn-primary{padding:9px 20px;border:none;border-radius:22px;background:#e07b54;color:#fff;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;}
 .btn-primary:hover{background:#c96440;}
+/* language switcher */
+.lang-btn{padding:9px 16px;border:1.5px solid #d0c0b0;border-radius:22px;background:#fff;cursor:pointer;font-size:14px;font-weight:700;color:#5a4a3a;transition:.2s;}
+.lang-btn:hover{border-color:#e07b54;color:#e07b54;}
 /* profile chip in nav */
 .profile-chip{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid #ece0d2;border-radius:30px;padding:5px 14px 5px 6px;cursor:pointer;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.05);}
 .profile-chip:hover{border-color:#e07b54;box-shadow:0 4px 14px rgba(224,123,84,.2);}
@@ -206,6 +215,12 @@ body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f5f0e
 .av-eye.l{left:15px;}.av-eye.r{right:15px;}
 .av-eye::after{content:'';position:absolute;top:1px;right:1px;width:3px;height:3px;background:#fff;border-radius:50%;}
 .av-mouth{position:absolute;top:45px;left:50%;transform:translateX(-50%);width:13px;height:6px;border:2px solid #c97a5a;border-top:0;border-radius:0 0 12px 12px;z-index:4;}
+/* expressions */
+.av.exp-grin .av-mouth{width:16px;height:11px;background:#9a4a3a;border:none;border-radius:3px 3px 10px 10px;}
+.av.exp-flat .av-mouth{width:11px;height:0;border:0;border-bottom:2px solid #c97a5a;border-radius:0;}
+.av.exp-sleepy .av-eye{height:2.5px;border-radius:2px;top:32px;}
+.av.exp-sleepy .av-eye::after{display:none;}
+.av.exp-sleepy .av-mouth{width:7px;height:5px;}
 .av-blush{position:absolute;top:41px;width:10px;height:5px;background:#ffaa9a;border-radius:50%;opacity:.55;z-index:3;}
 .av-blush.l{left:8px;}.av-blush.r{right:8px;}
 /* hair (color var --hair) */
@@ -660,26 +675,26 @@ input[type=range]::-webkit-slider-thumb{
   </nav>
 
   <div class="hero">
-    <div class="hero-live">现在在线 3,604 人正在专注</div>
-    <h1>跳进一个房间，<br>和真实的人<em>一起专注</em>。</h1>
-    <p>每个头像都是真实的人 — 选一个场景，设置你的目标，开始你的专注时光。</p>
+    <div class="hero-live" id="hero-live">现在在线 3,604 人正在专注</div>
+    <h1 data-i18n-html="hero_h1">跳进一个房间，<br>和真实的人<em>一起专注</em>。</h1>
+    <p data-i18n="hero_p">每个头像都是真实的人 — 选一个场景，设置你的目标，开始你的专注时光。</p>
     <div class="hero-cta">
-      <button class="btn-cta" onclick="browseScenes()">浏览学习场景 →</button>
-      <button class="btn-cta-ghost">了解更多</button>
+      <button class="btn-cta" data-i18n="browse" onclick="browseScenes()">浏览学习场景 →</button>
+      <button class="btn-cta-ghost" data-i18n="learnmore">了解更多</button>
     </div>
   </div>
 
   <div class="scenes-section">
     <div class="scenes-header">
-      <h2>选择你的场景</h2>
-      <span>每个房间都有真实的人在专注</span>
+      <h2 data-i18n="pick_scene">选择你的场景</h2>
+      <span data-i18n="pick_scene_sub">每个房间都有真实的人在专注</span>
     </div>
     <div class="cards-grid">
       <div class="scene-card" onclick="selectScene(0)">
         <div class="card-visual" style="background:linear-gradient(160deg,#efe6da,#ddd0c0)">
-          <img class="card-img" src="library.webp?v=2" alt="魔法图书馆"/>
-          <div class="card-live">LIVE 现场</div>
-          <button class="card-mute" onclick="event.stopPropagation()">🔇</button>
+          <img class="card-img" src="library.webp?v=2" alt="图书馆"/>
+          <div class="card-live" data-i18n="live_tag">LIVE 现场</div>
+          <button class="card-mute" onclick="toggleCardMute(this,event)">🔊</button>
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -689,18 +704,18 @@ input[type=range]::-webkit-slider-thumb{
             </div>
             <div class="card-flags">🇫🇷🇰🇷🇻🇳🇵🇹</div>
           </div>
-          <div class="card-title">魔法图书馆</div>
-          <div class="card-sub">Arcane Library · 安静沉浸</div>
-          <div class="card-rooms">● 123 间教室</div>
-          <button class="btn-enter">进入场景 →</button>
+          <div class="card-title" data-i18n="sc0_n">魔法图书馆</div>
+          <div class="card-sub" data-i18n="sc0_s">Arcane Library · 安静沉浸</div>
+          <div class="card-rooms">● 123 <span data-i18n="rooms_n">间教室</span></div>
+          <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
         </div>
       </div>
 
       <div class="scene-card" onclick="selectScene(1)">
         <div class="card-visual" style="background:linear-gradient(160deg,#f5e6d0,#e8d0b0)">
-          <img class="card-img" src="cafe.webp?v=2" alt="夜间咖啡馆"/>
-          <div class="card-live">LIVE 现场</div>
-          <button class="card-mute" onclick="event.stopPropagation()">🔇</button>
+          <img class="card-img" src="cafe.webp?v=4" alt="咖啡厅"/>
+          <div class="card-live" data-i18n="live_tag">LIVE 现场</div>
+          <button class="card-mute" onclick="toggleCardMute(this,event)">🔊</button>
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -710,18 +725,18 @@ input[type=range]::-webkit-slider-thumb{
             </div>
             <div class="card-flags">🇸🇪🇰🇷🇦🇷🇨🇦</div>
           </div>
-          <div class="card-title">夜间咖啡馆</div>
-          <div class="card-sub">Night Café · 温暖热闹</div>
-          <div class="card-rooms">● 198 间教室</div>
-          <button class="btn-enter">进入场景 →</button>
+          <div class="card-title" data-i18n="sc1_n">咖啡厅</div>
+          <div class="card-sub" data-i18n="sc1_s">Café · 温暖热闹</div>
+          <div class="card-rooms">● 198 <span data-i18n="rooms_n">间教室</span></div>
+          <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
         </div>
       </div>
 
       <div class="scene-card" onclick="selectScene(2)">
-        <div class="card-visual" style="background:linear-gradient(160deg,#dfe2ef,#c4cae0)">
-          <img class="card-img" src="train.webp?v=2" alt="星夜列车"/>
-          <div class="card-live">LIVE 现场</div>
-          <button class="card-mute" onclick="event.stopPropagation()">🔇</button>
+        <div class="card-visual" style="background:linear-gradient(160deg,#f0e6d6,#dcc9ad)">
+          <img class="card-img" src="onsen.webp?v=2" alt="汤泉中心"/>
+          <div class="card-live" data-i18n="live_tag">LIVE 现场</div>
+          <button class="card-mute" onclick="toggleCardMute(this,event)">🔊</button>
         </div>
         <div class="card-body">
           <div class="card-meta">
@@ -729,12 +744,12 @@ input[type=range]::-webkit-slider-thumb{
               <div class="card-avatars" id="av-2"></div>
               <div class="card-count">👥 <span id="cnt-2">709</span></div>
             </div>
-            <div class="card-flags">🌙🇰🇷🇨🇳🇻🇳</div>
+            <div class="card-flags">♨️🇯🇵🇰🇷🇨🇳</div>
           </div>
-          <div class="card-title">星夜列车</div>
-          <div class="card-sub">Starlight Train · 旅途专注</div>
-          <div class="card-rooms">● 123 间教室</div>
-          <button class="btn-enter">进入场景 →</button>
+          <div class="card-title" data-i18n="sc2_n">汤泉中心</div>
+          <div class="card-sub" data-i18n="sc2_s">Hot Spring · 放松专注</div>
+          <div class="card-rooms">● 123 <span data-i18n="rooms_n">间教室</span></div>
+          <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
         </div>
       </div>
     </div>
@@ -742,10 +757,10 @@ input[type=range]::-webkit-slider-thumb{
 
   <div class="stats-bar">
     <div class="stats-inner">
-      <div class="stat-item"><div class="stat-num">12,847,320</div><div class="stat-label">累计专注分钟</div></div>
-      <div class="stat-item"><div class="stat-num" id="dau">847,320</div><div class="stat-label">今日新增分钟</div></div>
-      <div class="stat-item"><div class="stat-num">186</div><div class="stat-label">国家和地区</div></div>
-      <div class="stat-item"><div class="stat-num">3,604</div><div class="stat-label">当前在线</div></div>
+      <div class="stat-item"><div class="stat-num">12,847,320</div><div class="stat-label" data-i18n="stat_total">累计专注分钟</div></div>
+      <div class="stat-item"><div class="stat-num" id="dau">847,320</div><div class="stat-label" data-i18n="stat_today">今日新增分钟</div></div>
+      <div class="stat-item"><div class="stat-num">186</div><div class="stat-label" data-i18n="stat_countries">国家和地区</div></div>
+      <div class="stat-item"><div class="stat-num">3,604</div><div class="stat-label" data-i18n="stat_online">当前在线</div></div>
     </div>
   </div>
 </div>
@@ -754,9 +769,9 @@ input[type=range]::-webkit-slider-thumb{
 <div class="page" id="page-scene">
   <div class="scene-sel-wrap">
     <div class="sel-head">
-      <div class="sel-badge">🌸 樱花季 — 进行中</div>
-      <h2>你想去哪里？</h2>
-      <p>选择一个场景，和来自全球的人一起专注学习。</p>
+      <div class="sel-badge" data-i18n="season">🌸 樱花季 — 进行中</div>
+      <h2 data-i18n="where">你想去哪里？</h2>
+      <p data-i18n="where_sub">选择一个场景，和来自全球的人一起专注学习。</p>
     </div>
     <div class="scene-sel-layout">
     <div class="sel-left">
@@ -787,23 +802,23 @@ input[type=range]::-webkit-slider-thumb{
     <div class="sel-right">
       <div class="sel-panel">
         <div class="sel-tabs">
-          <button class="sel-tab active" id="tab-quick" onclick="selTab('quick')">快速加入</button>
-          <button class="sel-tab" id="tab-friends" onclick="selTab('friends')">好友</button>
+          <button class="sel-tab active" id="tab-quick" data-i18n="tab_quick" onclick="selTab('quick')">快速加入</button>
+          <button class="sel-tab" id="tab-friends" data-i18n="tab_friends" onclick="selTab('friends')">好友</button>
         </div>
         <div id="sel-quick">
           <div class="sel-avatars" id="sel-avs"></div>
-          <div class="sel-studying"><strong id="sel-cnt">21,870</strong> 正在学习</div>
+          <div class="sel-studying"><strong id="sel-cnt">21,870</strong> <span data-i18n="studying">正在学习</span></div>
         </div>
         <div id="sel-friends" style="display:none">
           <div class="fr-list" id="fr-list"></div>
-          <button class="fr-invite" onclick="alert('📨 邀请链接已复制，发给好友一起专注吧！')">＋ 邀请好友</button>
+          <button class="fr-invite" data-i18n="fr_invite" onclick="alert('📨 邀请链接已复制，发给好友一起专注吧！')">＋ 邀请好友</button>
         </div>
       </div>
     </div>
     </div><!-- end grid -->
 
     <div style="display:flex;gap:10px;margin-top:28px;">
-      <button class="btn-back" onclick="showPage('page-home')">← 返回</button>
+      <button class="btn-back" data-i18n="back" onclick="showPage('page-home')">← 返回</button>
       <button class="btn-cta" id="sel-cta" style="flex:1;border-radius:14px" onclick="enterScene()">开始专注 →</button>
     </div>
   </div><!-- end wrap -->
@@ -813,20 +828,21 @@ input[type=range]::-webkit-slider-thumb{
 <div class="page" id="page-avatar">
   <div class="avatar-layout">
     <h2 id="ava-title">捏一个你自己 ✨</h2>
-    <p class="sub">自由搭配，房间里的人就靠这个认出你 — 只需设置一次 👋</p>
+    <p class="sub" data-i18n="ava_sub">自由搭配，房间里的人就靠这个认出你 — 只需设置一次 👋</p>
 
     <div class="ava-section">
       <div class="creator">
         <div class="creator-preview">
-          <button class="creator-dice" onclick="randomizeAvatar()">🎲 随机</button>
+          <button class="creator-dice" data-i18n="dice" onclick="randomizeAvatar()">🎲 随机</button>
           <div class="av" id="preview-av"></div>
         </div>
         <div class="creator-opts">
-          <div class="opt-row"><div class="opt-label">肤色</div><div class="opt-swatches" id="opt-skin"></div></div>
-          <div class="opt-row"><div class="opt-label">发型</div><div class="opt-swatches" id="opt-hairstyle"></div></div>
-          <div class="opt-row"><div class="opt-label">发色</div><div class="opt-swatches" id="opt-hair"></div></div>
-          <div class="opt-row"><div class="opt-label">服装</div><div class="opt-swatches" id="opt-outfit"></div></div>
-          <div class="opt-row"><div class="opt-label">配饰</div><div class="opt-swatches" id="opt-acc"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_skin">肤色</div><div class="opt-swatches" id="opt-skin"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_hairstyle">发型</div><div class="opt-swatches" id="opt-hairstyle"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_hair">发色</div><div class="opt-swatches" id="opt-hair"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_outfit">服装</div><div class="opt-swatches" id="opt-outfit"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_acc">配饰</div><div class="opt-swatches" id="opt-acc"></div></div>
+          <div class="opt-row"><div class="opt-label" data-i18n="opt_exp">表情</div><div class="opt-swatches" id="opt-exp"></div></div>
         </div>
       </div>
     </div>
@@ -834,19 +850,19 @@ input[type=range]::-webkit-slider-thumb{
     <div class="ava-section">
       <div class="form-row">
         <div class="form-group">
-          <div class="form-label">你的名字</div>
-          <input class="form-input" id="uname" type="text" placeholder="例：Alex" maxlength="12"/>
+          <div class="form-label" data-i18n="your_name">你的名字</div>
+          <input class="form-input" id="uname" type="text" data-i18n-ph="name_ph" placeholder="例：Alex" maxlength="12"/>
         </div>
       </div>
       <div class="form-group">
-        <div class="form-label">未来五年的目标是什么？</div>
-        <textarea class="form-textarea" id="ugoal" rows="3" placeholder="例：成为全栈工程师，用技术改变教育行业 🚀"></textarea>
+        <div class="form-label" data-i18n="goal_q">未来五年的目标是什么？</div>
+        <textarea class="form-textarea" id="ugoal" rows="3" data-i18n-ph="goal_ph" placeholder="例：成为全栈工程师，用技术改变教育行业 🚀"></textarea>
       </div>
     </div>
 
     <div class="avatar-footer">
-      <button class="btn-back" onclick="showPage('page-home')">← 取消</button>
-      <button class="btn-cta" style="flex:1;border-radius:14px;font-size:16px" onclick="saveProfileAndExit()">保存形象 ✓</button>
+      <button class="btn-back" data-i18n="cancel" onclick="showPage('page-home')">← 取消</button>
+      <button class="btn-cta" data-i18n="save_ava" style="flex:1;border-radius:14px;font-size:16px" onclick="saveProfileAndExit()">保存形象 ✓</button>
     </div>
   </div>
 </div>
@@ -854,8 +870,8 @@ input[type=range]::-webkit-slider-thumb{
 <!-- ══════════ PAGE 4: LOADING ══════════ -->
 <div class="page" id="page-loading" style="background:#fff;">
   <div class="loading-layout">
-    <div class="loading-title">正在为你配对房间</div>
-    <div class="loading-sub">找到和你一起专注的人…</div>
+    <div class="loading-title" data-i18n="loading_title">正在为你配对房间</div>
+    <div class="loading-sub" data-i18n="loading_sub">找到和你一起专注的人…</div>
     <div class="join-cards" id="join-cards"></div>
     <div class="globe-section">
       <div class="stars-wrap" id="stars-wrap"></div>
@@ -863,7 +879,7 @@ input[type=range]::-webkit-slider-thumb{
       <div class="glow-ring"></div>
     </div>
     <div class="progress-pill">
-      正在加入房间 <strong id="join-num">0</strong>/270
+      <span data-i18n="joining">正在加入房间</span> <strong id="join-num">0</strong>/270
       <span class="dot-anim"><span>●</span><span>●</span><span>●</span></span>
     </div>
   </div>
@@ -877,17 +893,17 @@ input[type=range]::-webkit-slider-thumb{
     <div class="iso-you-char" id="iso-you" style="left:calc(50% - 28px);bottom:8%"></div>
   </div>
   <button class="seats-back-btn" onclick="showPage('page-loading')">←</button>
-  <div class="choose-title"><h2>选择空位</h2></div>
+  <div class="choose-title"><h2 data-i18n="choose_seat">选择空位</h2></div>
 </div>
 
 <!-- ══════════ PAGE 6: SETUP ══════════ -->
 <div class="page" id="page-setup">
   <div class="setup-bg-layer"><div class="setup-bg-icon">🏛️</div></div>
   <div class="setup-topbar">
-    <button class="glass-btn" onclick="showPage('page-seats')">← 返回</button>
+    <button class="glass-btn" data-i18n="back" onclick="showPage('page-seats')">← 返回</button>
     <div class="setup-topbar-right">
       <button class="glass-btn" onclick="openAmbiance()">🎵</button>
-      <button class="glass-btn">👥 邀请</button>
+      <button class="glass-btn" data-i18n="invite">👥 邀请</button>
     </div>
   </div>
   <div class="char-behind" id="char-behind"></div>
@@ -895,7 +911,7 @@ input[type=range]::-webkit-slider-thumb{
     <div class="setup-card">
       <div class="setup-timer-big" id="s-timer">00:25</div>
       <div class="setup-total">
-        <div class="setup-total-pill">⏱ 合计: <span id="s-mins">25</span> 分钟</div>
+        <div class="setup-total-pill" id="s-total">⏱ 合计: <span id="s-mins">25</span> 分钟</div>
       </div>
       <div class="time-slider-wrap">
         <input type="range" id="t-slider" min="5" max="120" value="25" oninput="updateSetup(this.value)"/>
@@ -904,25 +920,25 @@ input[type=range]::-webkit-slider-thumb{
       <div class="setup-row">
         <div class="setup-field-card" style="border-left:4px solid #4a90e2">
           <div class="sfc-left">
-            <div class="sfc-label">场次标签</div>
-            <div class="sfc-value">学习</div>
-            <div class="sfc-sub">添加当前专注</div>
+            <div class="sfc-label" data-i18n="tag_label">场次标签</div>
+            <div class="sfc-value" data-i18n="tag_study">学习</div>
+            <div class="sfc-sub" data-i18n="tag_sub">添加当前专注</div>
           </div>
           <div class="sfc-icon">🏷️</div>
         </div>
       </div>
       <div class="setup-field-card" style="margin-bottom:0">
         <div class="sfc-left">
-          <div class="sfc-label">总奖励</div>
+          <div class="sfc-label" data-i18n="reward">总奖励</div>
           <div class="reward-row" style="margin-top:4px">
-            <div class="reward-item">🍅 加成</div>
+            <div class="reward-item" data-i18n="reward_boost">🍅 加成</div>
             <div class="reward-item">☕ <span id="s-beans">30</span></div>
             <div class="reward-item">🌰 <span id="s-nuts">6</span></div>
           </div>
         </div>
       </div>
       <div class="setup-card-footer">
-        <button class="btn-start-focus" onclick="startRoom()">开始专注</button>
+        <button class="btn-start-focus" data-i18n="begin" onclick="startRoom()">开始专注</button>
       </div>
     </div>
   </div>
@@ -940,40 +956,204 @@ input[type=range]::-webkit-slider-thumb{
     </div>
     <div class="room-top-right">
       <button class="glass-btn" onclick="openAmbiance()">🎵</button>
-      <button class="glass-btn">👥 邀请</button>
-      <button class="glass-btn" onclick="leaveRoom()">✕ 离开房间</button>
+      <button class="glass-btn" data-i18n="invite">👥 邀请</button>
+      <button class="glass-btn" data-i18n="leave" onclick="leaveRoom()">✕ 离开房间</button>
     </div>
   </div>
 
   <div class="chat-panel">
     <div class="chat-hdr">
-      <span class="chat-hdr-title">💬 Chat</span>
+      <span class="chat-hdr-title" data-i18n="chat">💬 Chat</span>
       <div class="chat-tabs">
-        <button class="ctab on">Welcome</button>
-        <button class="ctab">Room</button>
+        <button class="ctab on" data-i18n="chat_welcome">Welcome</button>
+        <button class="ctab" data-i18n="chat_room">Room</button>
       </div>
     </div>
     <div class="chat-msgs" id="chat-msgs"></div>
     <div class="chat-inp-row">
-      <input type="text" id="chat-in" placeholder="Send a message" onkeydown="if(event.key==='Enter')sendChat()"/>
-      <button onclick="sendChat()">Send</button>
+      <input type="text" id="chat-in" data-i18n-ph="chat_ph" placeholder="Send a message" onkeydown="if(event.key==='Enter')sendChat()"/>
+      <button data-i18n="send" onclick="sendChat()">Send</button>
     </div>
   </div>
 
   <div class="timer-panel">
     <div class="tp-time" id="tp-time">25:00</div>
-    <div class="tp-tag">Study</div>
+    <div class="tp-tag" data-i18n="tag_study">Study</div>
     <div class="tp-bar"><div class="tp-fill" id="tp-fill"></div></div>
-    <button class="tp-giveup" onclick="leaveRoom()">Hold to Give Up</button>
+    <button class="tp-giveup" data-i18n="giveup" onclick="leaveRoom()">Hold to Give Up</button>
+  </div>
+</div>
+
+<!-- ══════════ PAGE 3D: 图书馆 3D 房间 ══════════ -->
+<div class="page" id="page-3d">
+  <canvas id="r3d-canvas"></canvas>
+  <button class="seats-back-btn" onclick="exit3D()">←</button>
+  <div class="choose-title" id="r3d-title"><h2 data-i18n="choose_seat">选择空位</h2></div>
+  <!-- 坐下后出现：时长设置 -->
+  <div id="r3d-setup" style="display:none">
+    <div class="s3-time" id="s3-time">25:00</div>
+    <input type="range" id="s3-slider" min="5" max="120" value="25" oninput="r3dSetMins(this.value)"/>
+    <button class="s3-go" data-i18n="begin" onclick="r3dStartFocus()">开始专注</button>
+  </div>
+  <!-- 学习中：计时器浮窗 -->
+  <div class="timer-panel" id="r3d-timer" style="display:none">
+    <div class="tp-time" id="r3d-tp-time">25:00</div>
+    <div class="tp-tag" data-i18n="tag_study">Study</div>
+    <div class="tp-bar"><div class="tp-fill" id="r3d-tp-fill"></div></div>
+    <button class="tp-giveup" data-i18n="leave" onclick="exit3D()">✕ 离开房间</button>
   </div>
 </div>
 
 <script>
+/* ─── i18n 多语言 (中/英/日/韩) ─── */
+const I18N={
+  live_now:{zh:'现在在线 {n} 人正在专注',en:'{n} people focusing right now',ja:'現在 {n} 人が集中中',ko:'지금 {n}명이 집중 중'},
+  hero_h1:{zh:'跳进一个房间，<br>和真实的人<em>一起专注</em>。',en:'Jump into a room,<br>focus <em>together</em> with real people.',ja:'部屋に入って、<br>本物の仲間と<em>一緒に集中</em>。',ko:'방에 들어가,<br>진짜 사람들과 <em>함께 집중</em>.'},
+  hero_p:{zh:'每个头像都是真实的人 — 选一个场景，设置你的目标，开始你的专注时光。',en:'Every avatar is a real person — pick a scene, set your goal, start focusing.',ja:'すべてのアバターは本物の人。シーンを選び、目標を決めて集中を始めよう。',ko:'모든 아바타는 실제 사람입니다 — 장면을 고르고 목표를 정해 집중을 시작하세요.'},
+  browse:{zh:'浏览学习场景 →',en:'Browse study scenes →',ja:'学習シーンを見る →',ko:'학습 장면 보기 →'},
+  learnmore:{zh:'了解更多',en:'Learn more',ja:'詳しく見る',ko:'더 알아보기'},
+  pick_scene:{zh:'选择你的场景',en:'Pick your scene',ja:'シーンを選ぶ',ko:'장면 선택'},
+  pick_scene_sub:{zh:'每个房间都有真实的人在专注',en:'Real people are focusing in every room',ja:'どの部屋でも本物の人が集中中',ko:'모든 방에 실제 사람들이 집중 중'},
+  enter_scene:{zh:'进入场景 →',en:'Enter →',ja:'入る →',ko:'입장 →'},
+  live_tag:{zh:'LIVE 现场',en:'LIVE',ja:'ライブ',ko:'LIVE'},
+  hs_short:{zh:'短',en:'Short',ja:'ショート',ko:'짧은'},
+  hs_long:{zh:'长发',en:'Long',ja:'ロング',ko:'긴'},
+  hs_bun:{zh:'丸子',en:'Bun',ja:'お団子',ko:'번'},
+  hs_curly:{zh:'卷',en:'Curly',ja:'カール',ko:'곱슬'},
+  hs_buzz:{zh:'寸',en:'Buzz',ja:'坊主',ko:'삭발'},
+  ac_none:{zh:'无',en:'None',ja:'なし',ko:'없음'},
+  ac_glasses:{zh:'眼镜',en:'Glasses',ja:'メガネ',ko:'안경'},
+  ac_headphones:{zh:'耳机',en:'Headphones',ja:'ヘッドホン',ko:'헤드폰'},
+  ac_cap:{zh:'帽子',en:'Cap',ja:'帽子',ko:'모자'},
+  opt_exp:{zh:'表情',en:'Expression',ja:'表情',ko:'표정'},
+  ex_smile:{zh:'微笑',en:'Smile',ja:'笑顔',ko:'미소'},
+  ex_grin:{zh:'大笑',en:'Grin',ja:'大笑い',ko:'활짝'},
+  ex_flat:{zh:'认真',en:'Serious',ja:'真剣',ko:'진지'},
+  ex_sleepy:{zh:'困',en:'Sleepy',ja:'眠い',ko:'졸림'},
+  rooms_n:{zh:'间教室',en:'rooms',ja:'部屋',ko:'개 교실'},
+  stat_total:{zh:'累计专注分钟',en:'Total focus minutes',ja:'累計集中分',ko:'누적 집중 분'},
+  stat_today:{zh:'今日新增分钟',en:'New minutes today',ja:'本日の新規分',ko:'오늘 추가 분'},
+  stat_countries:{zh:'国家和地区',en:'Countries',ja:'国と地域',ko:'국가·지역'},
+  stat_online:{zh:'当前在线',en:'Online now',ja:'オンライン中',ko:'현재 접속'},
+  season:{zh:'🌸 樱花季 — 进行中',en:'🌸 Cherry Blossom Season — Live',ja:'🌸 桜シーズン — 開催中',ko:'🌸 벚꽃 시즌 — 진행 중'},
+  where:{zh:'你想去哪里？',en:'Where to?',ja:'どこへ行く？',ko:'어디로 갈까요?'},
+  where_sub:{zh:'选择一个场景，和来自全球的人一起专注学习。',en:'Pick a scene and focus with people from around the world.',ja:'シーンを選んで、世界中の人と一緒に集中。',ko:'장면을 골라 전 세계 사람들과 함께 집중하세요.'},
+  tab_quick:{zh:'快速加入',en:'Quick Join',ja:'クイック参加',ko:'빠른 참여'},
+  tab_friends:{zh:'好友',en:'Friends',ja:'フレンド',ko:'친구'},
+  studying:{zh:'正在学习',en:'studying',ja:'が学習中',ko:'명 학습 중'},
+  back:{zh:'← 返回',en:'← Back',ja:'← 戻る',ko:'← 뒤로'},
+  start_focus:{zh:'开始专注 →',en:'Start focusing →',ja:'集中を始める →',ko:'집중 시작 →'},
+  unlock_row:{zh:'🔒 邀请好友解锁',en:'🔒 Invite friends to unlock',ja:'🔒 友達を招待して解放',ko:'🔒 친구 초대로 잠금 해제'},
+  friends_unit:{zh:'位好友',en:'friends',ja:'人の友達',ko:'명 친구'},
+  unlock_cta:{zh:'邀请好友解锁',en:'Invite to unlock',ja:'招待して解放',ko:'초대해 해제'},
+  fr_studying:{zh:'专注中',en:'Focusing',ja:'集中中',ko:'집중 중'},
+  fr_online:{zh:'在线',en:'Online',ja:'オンライン',ko:'온라인'},
+  fr_offline:{zh:'离线',en:'Offline',ja:'オフライン',ko:'오프라인'},
+  fr_in_scene:{zh:'正在「{s}」专注',en:'Focusing in "{s}"',ja:'「{s}」で集中中',ko:'"{s}"에서 집중 중'},
+  fr_just_online:{zh:'刚刚在线',en:'Online just now',ja:'たった今オンライン',ko:'방금 접속'},
+  fr_last:{zh:'上次活跃 {t}',en:'Active {t}',ja:'最終 {t}',ko:'마지막 활동 {t}'},
+  fr_invite:{zh:'＋ 邀请好友',en:'＋ Invite friends',ja:'＋ 友達を招待',ko:'＋ 친구 초대'},
+  ava_create:{zh:'捏一个你自己 ✨',en:'Create your character ✨',ja:'自分を作ろう ✨',ko:'나만의 캐릭터 만들기 ✨'},
+  ava_edit:{zh:'编辑你的形象 ✎',en:'Edit your character ✎',ja:'アバターを編集 ✎',ko:'캐릭터 편집 ✎'},
+  ava_sub:{zh:'自由搭配，房间里的人就靠这个认出你 — 只需设置一次 👋',en:'Mix and match — this is how others recognize you. Set it once 👋',ja:'自由に組み合わせて。これで他の人があなたを認識します（一度だけ）👋',ko:'자유롭게 꾸미세요 — 다른 사람이 이걸로 알아봅니다. 한 번만 설정 👋'},
+  opt_skin:{zh:'肤色',en:'Skin',ja:'肌の色',ko:'피부색'},
+  opt_hairstyle:{zh:'发型',en:'Hairstyle',ja:'髪型',ko:'헤어'},
+  opt_hair:{zh:'发色',en:'Hair color',ja:'髪の色',ko:'머리색'},
+  opt_outfit:{zh:'服装',en:'Outfit',ja:'服装',ko:'의상'},
+  opt_acc:{zh:'配饰',en:'Accessory',ja:'アクセ',ko:'액세서리'},
+  dice:{zh:'🎲 随机',en:'🎲 Random',ja:'🎲 ランダム',ko:'🎲 랜덤'},
+  your_name:{zh:'你的名字',en:'Your name',ja:'お名前',ko:'이름'},
+  name_ph:{zh:'例：Alex',en:'e.g. Alex',ja:'例：Alex',ko:'예: Alex'},
+  goal_q:{zh:'未来五年的目标是什么？',en:'Your 5-year goal?',ja:'5年後の目標は？',ko:'5년 후 목표는?'},
+  goal_ph:{zh:'例：成为全栈工程师，用技术改变教育行业 🚀',en:'e.g. Become a full-stack engineer and reshape education 🚀',ja:'例：フルスタックエンジニアになり教育を変える 🚀',ko:'예: 풀스택 개발자가 되어 교육을 바꾸기 🚀'},
+  cancel:{zh:'← 取消',en:'← Cancel',ja:'← キャンセル',ko:'← 취소'},
+  save_ava:{zh:'保存形象 ✓',en:'Save character ✓',ja:'保存 ✓',ko:'저장 ✓'},
+  create_me:{zh:'创建我的角色 ✨',en:'Create my character ✨',ja:'キャラを作成 ✨',ko:'캐릭터 만들기 ✨'},
+  edit:{zh:'编辑 ✎',en:'Edit ✎',ja:'編集 ✎',ko:'편집 ✎'},
+  loading_title:{zh:'正在为你配对房间',en:'Matching you to a room',ja:'部屋をマッチング中',ko:'방을 매칭하는 중'},
+  loading_sub:{zh:'找到和你一起专注的人…',en:'Finding people to focus with…',ja:'一緒に集中する人を探しています…',ko:'함께 집중할 사람을 찾는 중…'},
+  joining:{zh:'正在加入房间',en:'Joining room',ja:'部屋に参加中',ko:'방 참여 중'},
+  from_who:{zh:'来自 {c} 的 {n}',en:'{n} from {c}',ja:'{c} の {n}',ko:'{c}의 {n}'},
+  choose_seat:{zh:'选择空位',en:'Choose a seat',ja:'席を選ぶ',ko:'자리 선택'},
+  invite:{zh:'👥 邀请',en:'👥 Invite',ja:'👥 招待',ko:'👥 초대'},
+  total_min:{zh:'合计: {n} 分钟',en:'Total: {n} min',ja:'合計 {n} 分',ko:'합계 {n}분'},
+  tag_label:{zh:'场次标签',en:'Session tag',ja:'セッションタグ',ko:'세션 태그'},
+  tag_study:{zh:'学习',en:'Study',ja:'勉強',ko:'공부'},
+  tag_sub:{zh:'添加当前专注',en:'Add to this session',ja:'今回の集中に追加',ko:'이번 집중에 추가'},
+  reward:{zh:'总奖励',en:'Total reward',ja:'報酬',ko:'총 보상'},
+  reward_boost:{zh:'🍅 加成',en:'🍅 Boost',ja:'🍅 ブースト',ko:'🍅 부스트'},
+  begin:{zh:'开始专注',en:'Start',ja:'開始',ko:'시작'},
+  leave:{zh:'✕ 离开房间',en:'✕ Leave room',ja:'✕ 退室',ko:'✕ 나가기'},
+  chat:{zh:'💬 Chat',en:'💬 Chat',ja:'💬 チャット',ko:'💬 채팅'},
+  chat_welcome:{zh:'Welcome',en:'Welcome',ja:'ようこそ',ko:'환영'},
+  chat_room:{zh:'Room',en:'Room',ja:'ルーム',ko:'룸'},
+  chat_ph:{zh:'发条消息…',en:'Send a message',ja:'メッセージを送信',ko:'메시지 보내기'},
+  send:{zh:'发送',en:'Send',ja:'送信',ko:'전송'},
+  giveup:{zh:'长按放弃',en:'Hold to Give Up',ja:'長押しで諦める',ko:'길게 눌러 포기'},
+  welcome_room:{zh:'欢迎来到自习室！👋',en:'Welcome to the study room! 👋',ja:'自習室へようこそ！👋',ko:'스터디룸에 오신 걸 환영해요! 👋'},
+  say_hi:{zh:'和大家打个招呼吧 😊',en:'Say hi to everyone 😊',ja:'みんなに挨拶しよう 😊',ko:'모두에게 인사해요 😊'},
+  pf_streak:{zh:'连续记录',en:'Streak',ja:'連続日数',ko:'연속'},
+  pf_focused:{zh:'已专注',en:'Focused',ja:'集中時間',ko:'집중'},
+  pf_sessions:{zh:'场次',en:'Sessions',ja:'回数',ko:'세션'},
+  pf_task:{zh:'⚡ 当前任务',en:'⚡ Current task',ja:'⚡ 現在のタスク',ko:'⚡ 현재 작업'},
+  pf_dream:{zh:'⭐ 我的梦想',en:'⭐ My dream',ja:'⭐ 私の夢',ko:'⭐ 나의 꿈'},
+  pf_close:{zh:'关闭',en:'Close',ja:'閉じる',ko:'닫기'},
+  amb_title:{zh:'氛围',en:'Ambiance',ja:'雰囲気',ko:'분위기'},
+  amb_ambient:{zh:'环境音',en:'Ambient',ja:'環境音',ko:'환경음'},
+  amb_radio:{zh:'电台',en:'Radio',ja:'ラジオ',ko:'라디오'},
+  amb_settings:{zh:'设置',en:'Settings',ja:'設定',ko:'설정'},
+  amb_live:{zh:'● 直播 <b>{n}</b> 收听中',en:'● Live <b>{n}</b> listening',ja:'● ライブ <b>{n}</b> 人視聴中',ko:'● 라이브 <b>{n}</b> 청취 중'},
+  amb_mix:{zh:'混合出最适合你的氛围',en:'Mix your perfect ambiance',ja:'最適な雰囲気をミックス',ko:'나만의 분위기를 믹스'},
+  amb_reset:{zh:'全部重置',en:'Reset all',ja:'すべてリセット',ko:'전체 초기화'},
+  amb_master:{zh:'主音量',en:'Master volume',ja:'メイン音量',ko:'마스터 볼륨'},
+  amb_autoplay:{zh:'🎵 进入房间自动播放',en:'🎵 Auto-play on entering',ja:'🎵 入室時に自動再生',ko:'🎵 입장 시 자동 재생'},
+  amb_endtone:{zh:'⏰ 计时结束提示音',en:'⏰ Timer end chime',ja:'⏰ 終了時のチャイム',ko:'⏰ 종료 알림음'},
+  amb_dark:{zh:'🌙 夜间深色模式',en:'🌙 Dark mode',ja:'🌙 ダークモード',ko:'🌙 다크 모드'},
+  amb_note:{zh:'提示：这是演示界面，音频为模拟效果。接入真实音源后即可播放。',en:'Note: demo UI — audio is simulated. Hook up real sources to play.',ja:'注：デモ用UI。音声は擬似的です。実際の音源を接続すると再生できます。',ko:'참고: 데모 UI로 오디오는 시뮬레이션입니다. 실제 음원 연결 시 재생됩니다.'},
+  // ambient sound names
+  amb_rain:{zh:'大雨',en:'Heavy Rain',ja:'大雨',ko:'폭우'},
+  amb_cafe:{zh:'咖啡馆人声',en:'Café chatter',ja:'カフェの話し声',ko:'카페 소음'},
+  amb_keys:{zh:'键盘',en:'Keyboard',ja:'キーボード',ko:'키보드'},
+  amb_write:{zh:'书写',en:'Writing',ja:'筆記',ko:'필기'},
+  amb_book:{zh:'书本',en:'Pages',ja:'ページ',ko:'책장'},
+  amb_fire:{zh:'篝火',en:'Campfire',ja:'焚き火',ko:'모닥불'},
+  amb_waves:{zh:'海浪',en:'Waves',ja:'波',ko:'파도'},
+  // scene names/subs
+  sc0_n:{zh:'图书馆',en:'Library',ja:'図書館',ko:'도서관'},
+  sc0_s:{zh:'Library · 安静沉浸',en:'Library · Quiet & deep',ja:'図書館 · 静かに集中',ko:'도서관 · 조용한 몰입'},
+  sc1_n:{zh:'咖啡厅',en:'Café',ja:'カフェ',ko:'카페'},
+  sc1_s:{zh:'Café · 温暖热闹',en:'Café · Warm & lively',ja:'カフェ · 暖かく賑やか',ko:'카페 · 따뜻하고 활기찬'},
+  sc2_n:{zh:'汤泉中心',en:'Hot Spring',ja:'温泉センター',ko:'온천 센터'},
+  sc2_s:{zh:'Hot Spring · 放松专注',en:'Hot Spring · Relax & focus',ja:'温泉 · リラックス集中',ko:'온천 · 편안한 집중'},
+};
+const LANGS=[['zh','中'],['en','EN'],['ja','日'],['ko','한']];
+let lang='zh';try{const l=localStorage.getItem('fw_lang');if(l)lang=l;}catch(e){}
+function t(k,vars){let s=(I18N[k]&&I18N[k][lang])||(I18N[k]&&I18N[k].zh)||k;if(vars)for(const x in vars)s=s.replace('{'+x+'}',vars[x]);return s;}
+function applyLang(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>el.innerHTML=t(el.dataset.i18nHtml));
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>el.placeholder=t(el.dataset.i18nPh));
+  // strings with embedded numbers
+  const hl=document.getElementById('hero-live');if(hl)hl.textContent=t('live_now',{n:'3,604'});
+  const st=document.getElementById('s-total');if(st)st.innerHTML='⏱ '+t('total_min',{n:`<span id="s-mins">${myMins}</span>`});
+  // dynamic re-renders for whatever is built
+  if(typeof updateSceneUI==='function'&&document.getElementById('sel-name'))updateSceneUI();
+  if(typeof renderNav==='function')renderNav();
+  if(document.getElementById('sel-friends')&&getComputedStyle(document.getElementById('sel-friends')).display!=='none')renderFriends();
+  if(document.getElementById('amb-overlay')&&document.getElementById('amb-overlay').classList.contains('show'))renderAmb();
+  if(document.getElementById('prof-overlay')&&document.getElementById('prof-overlay').classList.contains('show'))renderProfile();
+  renderLangBtn();
+}
+function setLang(l){lang=l;try{localStorage.setItem('fw_lang',l);}catch(e){}applyLang();}
+function cycleLang(){const i=LANGS.findIndex(x=>x[0]===lang);setLang(LANGS[(i+1)%LANGS.length][0]);}
+function renderLangBtn(){const b=document.getElementById('lang-btn');if(b)b.textContent='🌐 '+(LANGS.find(x=>x[0]===lang)||LANGS[0])[1];}
+
 /* ─── DATA ─── */
 const SCENES=[
-  {flag:'🇫🇷',name:'魔法图书馆',img:'library.webp?v=2',cnt:21870,need:0},
-  {flag:'🇸🇪',name:'夜间咖啡馆',img:'cafe.webp?v=2',   cnt:8430, need:3},
-  {flag:'🌙',name:'星夜列车',  img:'train.webp?v=2',  cnt:5290, need:3},
+  {flag:'📚',name:'图书馆',img:'library.webp?v=2', room:'room_studyhall.webp?v=1', seatBg:'room_library.webp?v=1', seatChairs:'library', tint:'transparent', cnt:21870,need:0},
+  {flag:'☕',name:'咖啡厅',img:'cafe.webp?v=4',    room:'room_cafe.webp?v=4',      seatBg:'seat_cafe.webp?v=2', seatChairs:'cafe', tint:'transparent', cnt:8430, need:3},
+  {flag:'♨️',name:'汤泉中心',img:'onsen.webp?v=2', room:'room_onsen.webp?v=2',     seatBg:'seat_onsen.webp', seatChairs:'onsen', tint:'transparent', cnt:5290, need:3},
 ];
 let sceneIdx=0;
 // invited friends per scene (persisted) — invite enough to unlock a scene
@@ -991,11 +1171,13 @@ function inviteFriend(){
 const SKINS=['#F8D9C4','#F0C29E','#E0A878','#C68642','#8D5524'];
 const HAIRS=['#2A1D12','#4A2C18','#8B5A2B','#C68A3E','#E8C36A','#7a7a7a','#1a1a1a','#B5513A','#5a3a8a','#d94f8a'];
 const OUTFITS=['#e07b54','#5b8dd9','#27ae60','#e91e8c','#9b59b6','#f39c12','#3a4a5e','#16a085','#e74c3c','#2c3e50'];
-const HAIRSTYLES=[['h-short','短'],['h-long','长发'],['h-bun','丸子'],['h-curly','卷'],['h-buzz','寸']];
-const ACCS=[['none','无'],['glasses','眼镜'],['headphones','耳机'],['cap','帽子']];
+const HAIRSTYLES=[['h-short','hs_short'],['h-long','hs_long'],['h-bun','hs_bun'],['h-curly','hs_curly'],['h-buzz','hs_buzz']];
+const ACCS=[['none','ac_none'],['glasses','ac_glasses'],['headphones','ac_headphones'],['cap','ac_cap']];
+const EXPRESSIONS=[['smile','ex_smile'],['grin','ex_grin'],['flat','ex_flat'],['sleepy','ex_sleepy']];
 const CAPCOL='#e74c3c';
 function randInt(n){return Math.floor(Math.random()*n);}
-function randCfg(){return{skin:randInt(SKINS.length),hair:randInt(HAIRS.length),style:randInt(HAIRSTYLES.length),outfit:randInt(OUTFITS.length),acc:randInt(ACCS.length)};}
+function randCfg(){return{skin:randInt(SKINS.length),hair:randInt(HAIRS.length),style:randInt(HAIRSTYLES.length),outfit:randInt(OUTFITS.length),acc:randInt(ACCS.length),exp:randInt(EXPRESSIONS.length)};}
+function expCls(cfg){return 'exp-'+(EXPRESSIONS[cfg.exp||0][0]);}
 // returns inner HTML for an .av element given cfg
 function avInner(cfg,back){
   const accCls=ACCS[cfg.acc][0];
@@ -1020,13 +1202,14 @@ function avInner(cfg,back){
 }
 // create a full .av node at a given scale; back=true renders the rear view
 function avNode(cfg,scale,back){
-  const d=document.createElement('div');d.className='av'+(back?' back':'');
+  const d=document.createElement('div');d.className='av'+(back?' back':'')+' '+expCls(cfg);
   d.style.cssText=`--skin:${SKINS[cfg.skin]};--hair:${HAIRS[cfg.hair]};--outfit:${OUTFITS[cfg.outfit]};--cap:${CAPCOL};`;
   if(scale) d.style.transform=`scale(${scale})`;
   d.innerHTML=avInner(cfg,back);
   return d;
 }
 function paintAv(el,cfg){
+  el.className='av '+expCls(cfg);
   el.style.cssText=el.style.cssText.replace(/--skin[^;]*;|--hair[^;]*;|--outfit[^;]*;|--cap[^;]*;/g,'');
   el.style.setProperty('--skin',SKINS[cfg.skin]);
   el.style.setProperty('--hair',HAIRS[cfg.hair]);
@@ -1050,7 +1233,7 @@ const FRIENDS=[
   {name:'Tom',  flag:'🇬🇧',country:'英国', status:'offline', scene:'',          cfg:{skin:2,hair:5,style:4,outfit:5,acc:3},last:'2小时前'},
   {name:'Chen', flag:'🇨🇳',country:'中国', status:'offline', scene:'',          cfg:{skin:1,hair:6,style:3,outfit:8,acc:0},last:'昨天'},
 ];
-const STATUS={studying:['专注中','#e07b54'],online:['在线','#3a9a4a'],offline:['离线','#b0a090']};
+const STATUS={studying:['fr_studying','#e07b54'],online:['fr_online','#3a9a4a'],offline:['fr_offline','#b0a090']};
 function selTab(t){
   const q=t==='quick';
   document.getElementById('sel-quick').style.display=q?'':'none';
@@ -1064,9 +1247,10 @@ function renderFriends(){
   // online/studying first
   const order=[...FRIENDS].sort((a,b)=>({studying:0,online:1,offline:2}[a.status]-{studying:0,online:1,offline:2}[b.status]));
   order.forEach(f=>{
-    const [label,color]=STATUS[f.status];
+    const [labelKey,color]=STATUS[f.status];
+    const label=t(labelKey);
     const row=document.createElement('div');row.className='fr-row';
-    const sub=f.status==='studying'?`正在「${f.scene}」专注`:(f.status==='offline'?`上次活跃 ${f.last}`:'刚刚在线');
+    const sub=f.status==='studying'?t('fr_in_scene',{s:f.scene}):(f.status==='offline'?t('fr_last',{t:f.last}):t('fr_just_online'));
     row.innerHTML=`<div class="fr-av ${f.status==='offline'?'off':''}"></div>
       <div class="fr-meta"><div class="fr-n">${f.flag} ${f.name}</div><div class="fr-sub">${sub}</div></div>
       <div class="fr-status" style="color:${color}"><span class="fr-dot" style="background:${color}"></span>${label}</div>`;
@@ -1131,7 +1315,7 @@ function buildChips(elId,opts,key){
   const box=document.getElementById(elId);box.innerHTML='';
   opts.forEach((o,i)=>{
     const c=document.createElement('div');c.className='opt-chip'+(myCfg[key]===i?' on':'');
-    c.textContent=o[1];
+    c.textContent=t(o[1]);
     c.onclick=()=>{myCfg[key]=i;renderPreview();};
     box.appendChild(c);
   });
@@ -1142,6 +1326,7 @@ function renderCreatorOpts(){
   buildSwatches('opt-hair',HAIRS,'hair');
   buildSwatches('opt-outfit',OUTFITS,'outfit');
   buildChips('opt-acc',ACCS,'acc');
+  buildChips('opt-exp',EXPRESSIONS,'exp');
 }
 renderPreview();
 // scene select standing avatars
@@ -1159,13 +1344,18 @@ function refreshSelYou(){
 // ── NAV PROFILE CHIP ──
 function renderNav(){
   const nav=document.getElementById('nav-right');nav.innerHTML='';
+  // language switcher (always shown)
+  const lb=document.createElement('button');lb.className='lang-btn';lb.id='lang-btn';lb.onclick=cycleLang;
+  lb.textContent='🌐 '+(LANGS.find(x=>x[0]===lang)||LANGS[0])[1];
+  nav.appendChild(lb);
   if(hasProfile){
     const chip=document.createElement('div');chip.className='profile-chip';chip.onclick=openEditor;
-    chip.innerHTML=`<div class="pc-av"></div><div class="pc-name">${myName}</div><div class="pc-edit">编辑 ✎</div>`;
+    chip.innerHTML=`<div class="pc-av"></div><div class="pc-name"></div><div class="pc-edit">${t('edit')}</div>`;
+    chip.querySelector('.pc-name').textContent=myName;
     chip.querySelector('.pc-av').appendChild(avNode(myCfg));
     nav.appendChild(chip);
   }else{
-    const b=document.createElement('button');b.className='btn-primary';b.textContent='创建我的角色 ✨';b.onclick=openEditor;
+    const b=document.createElement('button');b.className='btn-primary';b.textContent=t('create_me');b.onclick=openEditor;
     nav.appendChild(b);
   }
 }
@@ -1173,7 +1363,7 @@ function renderNav(){
 function openEditor(){
   document.getElementById('uname').value=hasProfile?myName:'';
   document.getElementById('ugoal').value=hasProfile?myGoal:'';
-  document.getElementById('ava-title').textContent=hasProfile?'编辑你的形象 ✎':'捏一个你自己 ✨';
+  document.getElementById('ava-title').textContent=hasProfile?t('ava_edit'):t('ava_create');
   renderPreview();
   showPage('page-avatar');
 }
@@ -1196,6 +1386,7 @@ function enterScene(){
   startLoading();
 }
 renderNav();
+applyLang();
 // stars
 const sw=document.getElementById('stars-wrap');
 for(let i=0;i<30;i++){
@@ -1216,24 +1407,37 @@ function showPage(id){
 }
 
 /* ─── SCENE ─── */
+// 首页卡片的音乐开关（🔊 开 / 🔇 关）。音源接入后在这里挂播放/暂停。
+function toggleCardMute(btn,e){
+  e.stopPropagation();
+  const on=btn.dataset.on!=='0';      // 默认开
+  btn.dataset.on=on?'0':'1';
+  btn.textContent=on?'🔇':'🔊';
+  btn.classList.toggle('muted',on);
+  // TODO: 音源接入后 —— on? 停止该场景音乐 : 播放该场景音乐
+}
 function selectScene(i){sceneIdx=i;if(!hasProfile){openEditor();return;}goToSceneSel();}
 function goToSceneSel(){updateSceneUI();showPage('page-scene');}
 function updateSceneUI(){
   const s=SCENES[sceneIdx];
+  const sname=t('sc'+sceneIdx+'_n');
   document.getElementById('sel-flag').textContent=s.flag;
-  document.getElementById('sel-name').textContent=s.name;
+  document.getElementById('sel-name').textContent=sname;
   const locked=!sceneUnlocked(sceneIdx);
-  document.getElementById('sel-icon').innerHTML=`<img src="${s.img}" alt="${s.name}" style="${locked?'filter:grayscale(.6) brightness(.7);':''}"/>${locked?'<div class="sel-lockbadge">🔒</div>':''}`;
+  const iconEl=document.getElementById('sel-icon');
+  iconEl.style.background=s.tint||'transparent';
+  iconEl.style.borderRadius=s.tint&&s.tint!=='transparent'?'24px':'0';
+  iconEl.innerHTML=`<img src="${s.img}" alt="${sname}" style="${locked?'filter:grayscale(.6) brightness(.7);':''}"/>${locked?'<div class="sel-lockbadge">🔒</div>':''}`;
   document.getElementById('sel-cnt').textContent=s.cnt.toLocaleString();
   document.querySelectorAll('.sel-dot').forEach((d,i)=>d.classList.toggle('active',i===sceneIdx));
   // friend-unlock row
   const fr=document.getElementById('sel-friend');
-  if(locked){fr.style.display='flex';fr.innerHTML=`<span>🔒 邀请好友解锁</span><strong>${sceneFriends[sceneIdx]}/${s.need} 位好友</strong>`;}
+  if(locked){fr.style.display='flex';fr.innerHTML=`<span>${t('unlock_row')}</span><strong>${sceneFriends[sceneIdx]}/${s.need} ${t('friends_unit')}</strong>`;}
   else fr.style.display='none';
   // bottom CTA
   const cta=document.getElementById('sel-cta');
-  if(locked){cta.textContent=`邀请好友解锁 (${sceneFriends[sceneIdx]}/${s.need}) →`;cta.onclick=inviteFriend;cta.classList.add('locked');}
-  else{cta.textContent='开始专注 →';cta.onclick=enterScene;cta.classList.remove('locked');}
+  if(locked){cta.textContent=`${t('unlock_cta')} (${sceneFriends[sceneIdx]}/${s.need}) →`;cta.onclick=inviteFriend;cta.classList.add('locked');}
+  else{cta.textContent=t('start_focus');cta.onclick=enterScene;cta.classList.remove('locked');}
 }
 function nextScene(){sceneIdx=(sceneIdx+1)%3;updateSceneUI();}
 function prevScene(){sceneIdx=(sceneIdx+2)%3;updateSceneUI();}
@@ -1251,7 +1455,7 @@ function startLoading(){
     if(ui<JOINING.length){
       const u=JOINING[ui++];
       const c=document.createElement('div');c.className='join-card';
-      c.innerHTML=`<div class="jc-ava"></div><div class="jc-right"><div class="jc-name">${u.flag} 来自 ${u.country} 的 ${u.name}</div><div class="jc-detail">${u.subj}</div></div><div class="jc-time">${u.time}</div>`;
+      c.innerHTML=`<div class="jc-ava"></div><div class="jc-right"><div class="jc-name">${u.flag} ${t('from_who',{c:u.country,n:u.name})}</div><div class="jc-detail">${u.subj}</div></div><div class="jc-time">${u.time}</div>`;
       c.querySelector('.jc-ava').appendChild(avNode(randCfg()));
       document.getElementById('join-cards').appendChild(c);
       setTimeout(()=>c.classList.add('show'),50);
@@ -1275,14 +1479,39 @@ const CHAIRS=[
   {x:60.0,y:41,row:'side'}, {x:79.0,y:41,row:'side'},
   {x:64.5,y:51,row:'front'},{x:74.5,y:51,row:'front'},
 ];
+// 咖啡厅俯视图：4 张桌子，每桌左右各一个绿凳子（左凳坐人，右凳发光空位）
+const CHAIRS_CAFE=[ // 坐标来自图3白框检测
+  {x:24,y:63,row:'side'}, {x:34,y:63,row:'top'},  // 上左桌
+  {x:68,y:63,row:'side'}, {x:77,y:63,row:'top'},  // 上右桌
+  {x:24,y:82,row:'side'}, {x:34,y:82,row:'top'},  // 下左桌
+  {x:68,y:82,row:'side'}, {x:78,y:82,row:'top'},  // 下右桌
+];
+// 汤泉：坐标来自图3绿点检测（13 个可选位置）
+const CHAIRS_ONSEN=[
+  {x:30,y:21,row:'side'},{x:42,y:21,row:'side'},{x:57,y:31,row:'side'},{x:76,y:31,row:'side'},
+  {x:67,y:36,row:'side'},{x:33,y:42,row:'side'},{x:41,y:42,row:'side'},{x:64,y:57,row:'side'},
+  {x:41,y:58,row:'side'},{x:76,y:69,row:'side'},{x:31,y:72,row:'side'},{x:38,y:77,row:'side'},{x:45,y:77,row:'side'},
+];
+// 图书馆：坐标来自白框检测（2 桌 × 4 椅）
+const CHAIRS_LIBRARY=[
+  {x:22,y:38,row:'top'}, {x:38,y:38,row:'top'},  // 左桌远端（空位）
+  {x:61,y:38,row:'top'}, {x:76,y:39,row:'top'},  // 右桌远端
+  {x:29,y:53,row:'side'},{x:37,y:53,row:'side'}, // 左桌近端（坐人）
+  {x:62,y:53,row:'side'},{x:70,y:53,row:'side'}, // 右桌近端
+];
+const CHAIRSETS={cafe:CHAIRS_CAFE, onsen:CHAIRS_ONSEN, library:CHAIRS_LIBRARY};
 function buildSeats(){
   const ic=document.getElementById('iso-chars');
   const is=document.getElementById('iso-seats');
   ic.innerHTML='';is.innerHTML='';
+  // 按场景设置选座背景 + 座位布局
+  const sc=SCENES[sceneIdx];
+  document.querySelector('.iso-room').style.background=`#1a0e08 url('${sc.seatBg||'room_library.webp?v=1'}') 0 0 / 100% 100% no-repeat`;
+  const CHAIRSET=(sc.seatChairs&&CHAIRSETS[sc.seatChairs])||CHAIRS;
 
   // seat the NPCs on the front/side chairs (visible, in front of the table)
-  const occupantChairs=CHAIRS.filter(c=>c.row!=='top');
-  const glowChairs=CHAIRS.filter(c=>c.row==='top').concat(occupantChairs.slice(FAKE.length));
+  const occupantChairs=CHAIRSET.filter(c=>c.row!=='top');
+  const glowChairs=CHAIRSET.filter(c=>c.row==='top').concat(occupantChairs.slice(FAKE.length));
   occupantChairs.slice(0,FAKE.length).forEach((c,i)=>{
     const u=FAKE[i];
     const d=document.createElement('div');d.className='iso-char-existing';
@@ -1328,20 +1557,42 @@ function updateSetup(v){
 /* ─── ROOM ─── */
 function startRoom(){buildRoom();showPage('page-room');}
 function buildRoom(){
+  // 按所选场景设置房间内景背景
+  document.querySelector('.lib-scene').style.background=`#1a0e08 url('${SCENES[sceneIdx].room}') 0 0 / 100% 100% no-repeat`;
   // characters seated at the two tables (face-to-face). Coords = % aligned to the bg image.
   // [left%, bottom%, scale, isMe, fakeIndex]  — 'far' chairs sit higher/smaller (behind table)
   const rc=document.getElementById('r-chars');rc.innerHTML='';
   const me={name:myName,handle:'@me',flag:'🙋',country:'你',mins:Math.floor(timerSec/60),streak:1,hours:0,sessions:1,task:'Study',cfg:myCfg,goal:myGoal,isMe:true};
-  // [left%, bottom%, scale, person, back]  far chairs face us; near chairs show backs (正反面)
-  const seats=[
-    [33,30,.74, me      , true ], // me — near, back to viewer
-    [22,43,.60, FAKE[0] , false], // left far-left  (faces us)
-    [31,43,.60, FAKE[1] , false], // left far-right (faces us)
-    [20,30,.72, FAKE[2] , true ], // left near-left (back)
-    [69,43,.60, FAKE[3] , false], // right far-left (faces us)
-    [78,43,.60, FAKE[4] , false], // right far-right(faces us)
-    [80,30,.72, FAKE[5] , true ], // right near-right(back)
+  // 默认（图书馆/火车 双桌）布局：[left%, bottom%, scale, fakeIdx(-1=me), back]
+  const DEFAULT_LAYOUT=[
+    [33,30,.74,-1,true ],[22,43,.60,0,false],[31,43,.60,1,false],[20,30,.72,2,true ],
+    [69,43,.60,3,false],[78,43,.60,4,false],[80,30,.72,5,true ],
   ];
+  // 咖啡厅（正面）：坐标来自图2白框（bottom%=100-y）。近排背对、远排面向你
+  const CAFE_LAYOUT=[
+    [39,27,.60,-1,true ], // 我 — 前左桌近椅
+    [26,27,.60,0,true ],  // 前左桌近椅
+    [58,27,.60,1,true ],  // 前右桌近椅
+    [72,28,.58,2,true ],  // 前右桌近椅
+    [30,42,.50,3,false],  // 后左桌远椅（面向你）
+    [40,42,.50,4,false],  // 后左桌远椅
+    [56,42,.50,5,false],  // 后右桌远椅
+  ];
+  // 汤泉房间：坐标来自紫点检测（9 个点，bottom%=100-y），近大远小
+  const ONSEN_LAYOUT=[
+    [47,22,.67,-1,true ], // 我（近、底部）
+    [51,73,.50,0,false],
+    [37,70,.52,1,false],
+    [67,66,.53,2,false],
+    [72,57,.56,3,false],
+    [47,46,.59,4,false],
+    [64,43,.60,5,false],
+    [83,32,.64,0,false],
+    [38,23,.67,1,false],
+  ];
+  const LAYOUTS={cafe:CAFE_LAYOUT, onsen:ONSEN_LAYOUT};
+  const layout = LAYOUTS[SCENES[sceneIdx].seatChairs] || DEFAULT_LAYOUT;
+  const seats=layout.map(([lp,bp,sc,idx,back])=>[lp,bp,sc,(idx<0?me:FAKE[idx]),back]);
   roomPeople=seats.map(s=>s[3]);
   seats.forEach(([lp,bp,sc,u,back],idx)=>{
     const el=makeRChar(u,!!u.isMe,lp,back,idx);
@@ -1350,8 +1601,8 @@ function buildRoom(){
   });
   // chat
   const cm=document.getElementById('chat-msgs');cm.innerHTML='';
-  addChat(null,'Welcome to the study room! 👋','sys');
-  addChat(null,'Say hi to everyone 😊','sys');
+  addChat(null,t('welcome_room'),'sys');
+  addChat(null,t('say_hi'),'sys');
   chatIdx=0;clearInterval(chatInt);
   chatInt=setInterval(()=>{addChat(CHAT_POOL[chatIdx%CHAT_POOL.length]);chatIdx++;},3500);
   // timer
@@ -1386,12 +1637,12 @@ function renderProfile(){
       <div class="prof-timer">⏱ ${String(Math.floor(mins/60)).padStart(2,'0')}:${String(mins%60).padStart(2,'0')}</div>
     </div>
     <div class="prof-stats">
-      <div><b>${u.streak||1}</b><span>连续记录</span></div>
-      <div><b>${u.hours||0}h</b><span>已专注</span></div>
-      <div><b>${u.sessions||1}</b><span>场次</span></div>
+      <div><b>${u.streak||1}</b><span>${t('pf_streak')}</span></div>
+      <div><b>${u.hours||0}h</b><span>${t('pf_focused')}</span></div>
+      <div><b>${u.sessions||1}</b><span>${t('pf_sessions')}</span></div>
     </div>
-    <div class="prof-card task"><div class="prof-card-h">⚡ 当前任务</div><div class="prof-card-v">📚 ${u.task||'Study'}</div></div>
-    <div class="prof-card dream"><div class="prof-card-h">⭐ 我的梦想</div><div class="prof-card-v">"${u.goal||''}"</div></div>`;
+    <div class="prof-card task"><div class="prof-card-h">${t('pf_task')}</div><div class="prof-card-v">📚 ${u.task||'Study'}</div></div>
+    <div class="prof-card dream"><div class="prof-card-h">${t('pf_dream')}</div><div class="prof-card-v">"${u.goal||''}"</div></div>`;
   const av=document.querySelector('#prof-body .prof-ava');
   av.appendChild(avNode(u.cfg));
 }
@@ -1416,39 +1667,69 @@ function leaveRoom(){clearInterval(timerInt);clearInterval(chatInt);showPage('pa
 
 /* ─── 氛围 / 音乐 (Ambiance) ─── */
 const RADIOS=[
-  {key:'lofi', name:'Lo-fi 嘻哈',  sub:'Chillhop Records', art:'📻', tags:['Lo-fi','轻快'], live:4820, color:'#c8843e'},
-  {key:'piano',name:'平静钢琴',     sub:'Calm Piano',       art:'🎹', tags:['Piano','平静'], live:2960, color:'#9aa6b0'},
-  {key:'dark', name:'暗黑学院',     sub:'Classic Literature',art:'🕯️', tags:['Dark Academia','专注'], live:3129, color:'#8a4a3a'},
-  {key:'nature',name:'自然白噪音',  sub:'Forest & Rain',    art:'🌲', tags:['Nature','白噪音'], live:1740, color:'#5f8a55'},
+  {key:'lofi', name:'Lo-fi 嘻哈',  sub:'Chillhop Records', art:'📻', tags:['Lo-fi','轻快'], live:4820, color:'#c8843e', file:'sounds/bgm_lofi.m4a'},
+  {key:'piano',name:'平静钢琴',     sub:'Calm Piano',       art:'🎹', tags:['Piano','平静'], live:2960, color:'#9aa6b0', file:'sounds/bgm_piano.m4a'},
 ];
 const AMBIENTS=[
-  {key:'rain',  icon:'🌧️',name:'大雨',     v:30},
+  {key:'rain',  icon:'🌧️',name:'大雨',     v:0},
   {key:'cafe',  icon:'🗣️',name:'咖啡馆人声',v:0},
-  {key:'keys',  icon:'⌨️',name:'键盘',     v:0},
-  {key:'write', icon:'✏️',name:'书写',     v:0},
-  {key:'book',  icon:'📖',name:'书本',     v:0},
   {key:'fire',  icon:'🔥',name:'篝火',     v:0},
   {key:'waves', icon:'🌊',name:'海浪',     v:0},
 ];
-let ambTab='radio', radioIdx=0, radioPlaying=true, masterVol=60, ambientOn=true;
-function openAmbiance(){document.getElementById('amb-overlay').classList.add('show');renderAmb();}
+let ambTab='radio', radioIdx=0, radioPlaying=false, masterVol=60, ambientOn=true, radioVol=60;
+
+/* ─── 电台背景音乐：真实 m4a 播放 ─── */
+let radioEl=null;
+function applyRadio(){
+  const r=RADIOS[radioIdx];if(!r)return;
+  if(!radioEl){radioEl=new Audio();radioEl.loop=true;}
+  if(radioEl.dataset.key!==r.key){radioEl.src=r.file;radioEl.dataset.key=r.key;}
+  radioEl.volume=Math.min(1,radioVol/100);
+  if(radioPlaying){radioEl.play().catch(()=>{});}else radioEl.pause();
+}
+
+/* ─── 环境音：真实 mp3 循环播放 ─── */
+const AMB_FILES={rain:'sounds/rain.m4a',cafe:'sounds/cafe.m4a',fire:'sounds/fire.m4a',waves:'sounds/waves.m4a'};
+let ambEls={};
+function masterFactor(){return ambientOn?masterVol/100:0;}
+function ensureAudio(){
+  for(const k in AMB_FILES){
+    if(!ambEls[k]){const el=new Audio(AMB_FILES[k]);el.loop=true;el.preload='none';el.volume=0;ambEls[k]=el;}
+  }
+}
+function setAmbientVol(key,v){
+  ensureAudio();const el=ambEls[key];if(!el)return;
+  el.volume=Math.min(1,v/100*masterFactor());
+  if(v>0&&ambientOn){if(el.paused)el.play().catch(()=>{});}else el.pause();
+}
+function setAmbMaster(){ensureAudio();AMBIENTS.forEach(a=>setAmbientVol(a.key,a.v));}
+function stopAllAudio(){for(const k in ambEls)ambEls[k].pause();if(radioEl)radioEl.pause();}
+function resumeAudio(){if(ambientOn)AMBIENTS.forEach(a=>setAmbientVol(a.key,a.v));if(radioPlaying)applyRadio();}
+document.addEventListener('visibilitychange',()=>{document.hidden?stopAllAudio():resumeAudio();});
+window.addEventListener('pagehide',stopAllAudio);
+
+function openAmbiance(){ensureAudio();document.getElementById('amb-overlay').classList.add('show');renderAmb();}
 function closeAmbiance(){document.getElementById('amb-overlay').classList.remove('show');}
 function setAmbTab(t){ambTab=t;renderAmb();}
-function toggleRadio(){radioPlaying=!radioPlaying;renderAmb();}
-function pickRadio(i){radioIdx=i;radioPlaying=true;renderAmb();}
-function nextRadio(d){radioIdx=(radioIdx+d+RADIOS.length)%RADIOS.length;renderAmb();}
-function resetAmbients(){AMBIENTS.forEach(a=>a.v=0);renderAmb();}
+function toggleRadio(){radioPlaying=!radioPlaying;applyRadio();renderAmb();}
+function pickRadio(i){radioIdx=i;radioPlaying=true;applyRadio();renderAmb();}
+function nextRadio(d){radioIdx=(radioIdx+d+RADIOS.length)%RADIOS.length;applyRadio();renderAmb();}
+function onRadioVol(v){radioVol=+v;if(radioEl)radioEl.volume=Math.min(1,radioVol/100);}
+function resetAmbients(){AMBIENTS.forEach(a=>{a.v=0;setAmbientVol(a.key,0);});renderAmb();}
+function onAmbSlide(i,v,el){AMBIENTS[i].v=+v;setAmbientVol(AMBIENTS[i].key,+v);el.parentElement.querySelector('.amb-row-v').textContent=v+'%';}
+function toggleAmbient(on){ambientOn=on;setAmbMaster();}
+function onMasterSlide(v,el){masterVol=+v;setAmbMaster();el.parentElement.querySelector('.amb-row-v').textContent=v+'%';}
 function renderAmb(){
-  document.querySelectorAll('.amb-tab').forEach(t=>t.classList.toggle('on',t.dataset.t===ambTab));
+  document.querySelectorAll('.amb-tab').forEach(el=>el.classList.toggle('on',el.dataset.t===ambTab));
   const body=document.getElementById('amb-body');
   if(ambTab==='radio'){
     const r=RADIOS[radioIdx];
     body.innerHTML=`
       <div class="amb-now" style="--c:${r.color}">
-        <div class="amb-live">● 直播 <b>${r.live.toLocaleString()}</b> 收听中</div>
+        <div class="amb-live">${t('amb_live',{n:r.live.toLocaleString()})}</div>
         <div class="amb-art">${r.art}</div>
       </div>
-      <div class="amb-tags">${r.tags.map(t=>`<span class="amb-tag">${t}</span>`).join('')}</div>
+      <div class="amb-tags">${r.tags.map(tg=>`<span class="amb-tag">${tg}</span>`).join('')}</div>
       <div class="amb-rname">${r.name}</div>
       <div class="amb-rsub">🌙 ${r.sub}</div>
       <div class="amb-ctrls">
@@ -1456,32 +1737,32 @@ function renderAmb(){
         <button class="amb-play" onclick="toggleRadio()">${radioPlaying?'❚❚':'▶'}</button>
         <button class="amb-skip" onclick="nextRadio(1)">›</button>
       </div>
-      <div class="amb-vol"><span>🔈</span><input type="range" min="0" max="100" value="${masterVol}" oninput="masterVol=+this.value"><span>🔊</span></div>
+      <div class="amb-vol"><span>🔈</span><input type="range" min="0" max="100" value="${radioVol}" oninput="onRadioVol(this.value)"><span>🔊</span></div>
       <div class="amb-list">
-        ${RADIOS.map((x,i)=>`<div class="amb-card ${i===radioIdx?'on':''}" onclick="pickRadio(${i})"><div class="amb-card-art">${x.art}</div><div class="amb-card-meta"><div class="amb-card-n">${x.name}</div><div class="amb-card-tags">${x.tags.map(t=>`<span>${t}</span>`).join('')}</div></div>${i===radioIdx&&radioPlaying?'<div class="amb-eq"><i></i><i></i><i></i></div>':''}</div>`).join('')}
+        ${RADIOS.map((x,i)=>`<div class="amb-card ${i===radioIdx?'on':''}" onclick="pickRadio(${i})"><div class="amb-card-art">${x.art}</div><div class="amb-card-meta"><div class="amb-card-n">${x.name}</div><div class="amb-card-tags">${x.tags.map(tg=>`<span>${tg}</span>`).join('')}</div></div>${i===radioIdx&&radioPlaying?'<div class="amb-eq"><i></i><i></i><i></i></div>':''}</div>`).join('')}
       </div>`;
   } else if(ambTab==='ambient'){
     body.innerHTML=`
       <div class="amb-amb-head">
-        <div><div class="amb-rname">环境音</div><div class="amb-rsub">混合出最适合你的氛围</div></div>
+        <div><div class="amb-rname">${t('amb_ambient')}</div><div class="amb-rsub">${t('amb_mix')}</div></div>
         <div style="display:flex;align-items:center;gap:10px">
-          <button class="amb-reset" onclick="resetAmbients()">全部重置</button>
-          <label class="amb-switch"><input type="checkbox" ${ambientOn?'checked':''} onchange="ambientOn=this.checked"><span></span></label>
+          <button class="amb-reset" onclick="resetAmbients()">${t('amb_reset')}</button>
+          <label class="amb-switch"><input type="checkbox" ${ambientOn?'checked':''} onchange="toggleAmbient(this.checked)"><span></span></label>
         </div>
       </div>
       ${AMBIENTS.map((a,i)=>`
         <div class="amb-row">
-          <div class="amb-row-top"><span class="amb-row-ic">${a.icon}</span><span class="amb-row-n">${a.name}</span><span class="amb-row-v">${a.v}%</span></div>
-          <input type="range" min="0" max="100" value="${a.v}" oninput="AMBIENTS[${i}].v=+this.value;this.parentElement.querySelector('.amb-row-v').textContent=this.value+'%'">
+          <div class="amb-row-top"><span class="amb-row-ic">${a.icon}</span><span class="amb-row-n">${t('amb_'+a.key)}</span><span class="amb-row-v">${a.v}%</span></div>
+          <input type="range" min="0" max="100" value="${a.v}" oninput="onAmbSlide(${i},this.value,this)">
         </div>`).join('')}`;
   } else {
     body.innerHTML=`
-      <div class="amb-row"><div class="amb-row-top"><span class="amb-row-ic">🔊</span><span class="amb-row-n">主音量</span><span class="amb-row-v">${masterVol}%</span></div>
-        <input type="range" min="0" max="100" value="${masterVol}" oninput="masterVol=+this.value;this.parentElement.querySelector('.amb-row-v').textContent=this.value+'%'"></div>
-      <label class="amb-setrow"><span>🎵 进入房间自动播放</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
-      <label class="amb-setrow"><span>⏰ 计时结束提示音</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
-      <label class="amb-setrow"><span>🌙 夜间深色模式</span><span class="amb-switch"><input type="checkbox"><span></span></span></label>
-      <p style="font-size:12px;color:#b0a090;margin-top:14px;line-height:1.6">提示：这是演示界面，音频为模拟效果。接入真实音源后即可播放。</p>`;
+      <div class="amb-row"><div class="amb-row-top"><span class="amb-row-ic">🔊</span><span class="amb-row-n">${t('amb_master')}</span><span class="amb-row-v">${masterVol}%</span></div>
+        <input type="range" min="0" max="100" value="${masterVol}" oninput="onMasterSlide(this.value,this)"></div>
+      <label class="amb-setrow"><span>${t('amb_autoplay')}</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
+      <label class="amb-setrow"><span>${t('amb_endtone')}</span><span class="amb-switch"><input type="checkbox" checked><span></span></span></label>
+      <label class="amb-setrow"><span>${t('amb_dark')}</span><span class="amb-switch"><input type="checkbox"><span></span></span></label>
+      <p style="font-size:12px;color:#b0a090;margin-top:14px;line-height:1.6">${t('amb_note')}</p>`;
   }
 }
 </script>
@@ -1491,7 +1772,7 @@ function renderAmb(){
   <button class="prof-arrow left" onclick="profileNav(-1)">‹</button>
   <div class="prof-card-wrap">
     <div class="prof-body" id="prof-body"></div>
-    <button class="prof-close" onclick="closeProfile()">关闭</button>
+    <button class="prof-close" data-i18n="pf_close" onclick="closeProfile()">关闭</button>
   </div>
   <button class="prof-arrow right" onclick="profileNav(1)">›</button>
 </div>
@@ -1500,16 +1781,119 @@ function renderAmb(){
 <div class="amb-overlay" id="amb-overlay" onclick="if(event.target===this)closeAmbiance()">
   <div class="amb-sheet">
     <div class="amb-head">
-      <h2>氛围</h2>
+      <h2 data-i18n="amb_title">氛围</h2>
       <button class="amb-close" onclick="closeAmbiance()">✕</button>
     </div>
     <div class="amb-tabs">
-      <button class="amb-tab" data-t="ambient" onclick="setAmbTab('ambient')">环境音</button>
-      <button class="amb-tab on" data-t="radio" onclick="setAmbTab('radio')">电台</button>
-      <button class="amb-tab" data-t="settings" onclick="setAmbTab('settings')">设置</button>
+      <button class="amb-tab" data-t="ambient" data-i18n="amb_ambient" onclick="setAmbTab('ambient')">环境音</button>
+      <button class="amb-tab on" data-t="radio" data-i18n="amb_radio" onclick="setAmbTab('radio')">电台</button>
+      <button class="amb-tab" data-t="settings" data-i18n="amb_settings" onclick="setAmbTab('settings')">设置</button>
     </div>
     <div class="amb-body" id="amb-body"></div>
   </div>
 </div>
+
+<!-- ══════════ 3D 图书馆引擎 (Three.js) ══════════ -->
+<script>
+let r3d={inited:false,active:false};
+function hex(arr,i){return arr[i%arr.length];}
+function r3dMakeAvatar(skin,hair,outfit){
+  const T=THREE,g=new T.Group();
+  const body=new T.Mesh(new T.CylinderGeometry(0.42,0.5,0.95,16),new T.MeshStandardMaterial({color:outfit,roughness:.7}));body.position.y=1.15;body.castShadow=true;g.add(body);
+  const head=new T.Mesh(new T.SphereGeometry(0.46,24,24),new T.MeshStandardMaterial({color:skin,roughness:.8}));head.position.y=1.95;head.castShadow=true;g.add(head);
+  const hr=new T.Mesh(new T.SphereGeometry(0.49,24,24,0,Math.PI*2,0,Math.PI*0.62),new T.MeshStandardMaterial({color:hair,roughness:.9}));hr.position.y=1.98;g.add(hr);
+  const em=new T.MeshStandardMaterial({color:'#2a1a10'});
+  [-0.16,0.16].forEach(ex=>{const e=new T.Mesh(new T.SphereGeometry(0.06,12,12),em);e.position.set(ex,1.97,0.42);g.add(e);});
+  return g;
+}
+function r3dInit(){
+  if(r3d.inited)return; const T=THREE;
+  const canvas=document.getElementById('r3d-canvas');
+  const renderer=new T.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+  const scene=new T.Scene();scene.background=new T.Color('#241a12');scene.fog=new T.Fog('#241a12',20,42);
+  const camera=new T.PerspectiveCamera(50,innerWidth/innerHeight,0.1,100);
+  // orbit state
+  const cam={theta:0,phi:1.0,rad:15,tx:0,ty:1.2,tz:0, dtheta:0,dphi:1.0,drad:15,dtx:0,dty:1.2,dtz:0};
+  scene.add(new T.HemisphereLight('#fff0dd','#3a2a1a',0.9));
+  const key=new T.DirectionalLight('#ffd9a0',1.1);key.position.set(6,12,8);key.castShadow=true;
+  key.shadow.mapSize.set(1024,1024);Object.assign(key.shadow.camera,{near:1,far:40,left:-16,right:16,top:16,bottom:-16});scene.add(key);
+  [[-4,0],[4,0]].forEach(([x,z])=>{const p=new T.PointLight('#ffb060',0.7,16);p.position.set(x,5,z);scene.add(p);});
+  const woodMat=new T.MeshStandardMaterial({color:'#a9824c',roughness:.7}),woodDark=new T.MeshStandardMaterial({color:'#6f4a22',roughness:.8});
+  const floor=new T.Mesh(new T.BoxGeometry(28,0.4,24),new T.MeshStandardMaterial({color:'#9a6b3a',roughness:.95}));floor.position.y=-0.2;floor.receiveShadow=true;scene.add(floor);
+  const rug=new T.Mesh(new T.BoxGeometry(11,0.05,17),new T.MeshStandardMaterial({color:'#7a3b30',roughness:1}));rug.position.y=0.03;rug.receiveShadow=true;scene.add(rug);
+  const wallMat=new T.MeshStandardMaterial({color:'#3a2418',roughness:1});
+  function wall(w,h,d,x,y,z){const m=new T.Mesh(new T.BoxGeometry(w,h,d),wallMat);m.position.set(x,y,z);m.receiveShadow=true;scene.add(m);}
+  wall(28,9,0.5,0,4.3,-12);wall(0.5,9,24,-14,4.3,0);wall(0.5,9,24,14,4.3,0);
+  for(let i=0;i<24;i++){const c=['#c07838','#5a8a3a','#9a4a8a','#d4a830','#5a6a9a','#e07850'][i%6];const b=new T.Mesh(new T.BoxGeometry(0.7,1.2+Math.random()*0.8,0.3),new T.MeshStandardMaterial({color:c,roughness:.8}));b.position.set(-11.5+i,6.2,-11.7);scene.add(b);}
+  function table(x,z){const g=new T.Group();const top=new T.Mesh(new T.BoxGeometry(3,0.25,2),woodMat);top.position.y=1.4;top.castShadow=top.receiveShadow=true;g.add(top);[[-1.3,-0.8],[1.3,-0.8],[-1.3,0.8],[1.3,0.8]].forEach(([lx,lz])=>{const l=new T.Mesh(new T.BoxGeometry(0.18,1.4,0.18),woodDark);l.position.set(lx,0.7,lz);g.add(l);});const lap=new T.Mesh(new T.BoxGeometry(0.7,0.05,0.5),new T.MeshStandardMaterial({color:'#444'}));lap.position.set(0,1.55,0);g.add(lap);g.position.set(x,0,z);scene.add(g);}
+  function chair(x,z,rot){const g=new T.Group();const s=new T.Mesh(new T.BoxGeometry(0.9,0.18,0.9),woodMat);s.position.y=0.7;s.castShadow=true;g.add(s);const b=new T.Mesh(new T.BoxGeometry(0.9,0.9,0.16),woodMat);b.position.set(0,1.15,-0.37);b.castShadow=true;g.add(b);g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);}
+  const seats=[];
+  function tableSet(tx,tz){table(tx,tz);[[tx-1.0,tz-1.7,0],[tx+1.0,tz-1.7,0],[tx-1.0,tz+1.7,Math.PI],[tx+1.0,tz+1.7,Math.PI]].forEach(([sx,sz,rot])=>{chair(sx,sz,rot);seats.push({x:sx,z:sz,rot,occupied:false,glow:null});});}
+  tableSet(-4,-1);tableSet(4,-1);
+  // seat fake users
+  [0,2,5,3].forEach((i,k)=>{const s=seats[i];if(!s)return;s.occupied=true;const u=FAKE[k];const av=r3dMakeAvatar(hex(SKINS,u.cfg.skin),hex(HAIRS,u.cfg.hair),hex(OUTFITS,u.cfg.outfit));av.position.set(s.x,-0.25,s.z);av.rotation.y=s.rot;scene.add(av);});
+  // glow rings on empty
+  const glowMat=new T.MeshBasicMaterial({color:'#fff6cc',transparent:true,opacity:.9});
+  seats.forEach(s=>{if(s.occupied)return;const r=new T.Mesh(new T.CylinderGeometry(0.5,0.5,0.08,24),glowMat.clone());r.position.set(s.x,0.82,s.z);r.userData.seat=s;s.glow=r;scene.add(r);});
+  // YOU avatar
+  const you=r3dMakeAvatar(hex(SKINS,myCfg.skin),hex(HAIRS,myCfg.hair),hex(OUTFITS,myCfg.outfit));you.visible=false;scene.add(you);
+  // raycast
+  const ray=new T.Raycaster(),mouse=new T.Vector2();
+  let dragging=false,px=0,py=0,walk=null;
+  canvas.addEventListener('pointerdown',e=>{
+    if(r3d.seated){return;} // after sitting, no seat pick
+    mouse.x=(e.clientX/innerWidth)*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;ray.setFromCamera(mouse,camera);
+    const hits=ray.intersectObjects(seats.filter(s=>s.glow&&s.glow.visible).map(s=>s.glow));
+    if(hits.length){const s=hits[0].object.userData.seat;you.visible=true;you.position.set(0,-0.25,8);walk={s,t:0,from:{x:0,z:8},to:{x:s.x,z:s.z}};s.glow.visible=false;return;}
+    dragging=true;px=e.clientX;py=e.clientY;
+  });
+  addEventListener('pointermove',e=>{if(!dragging)return;cam.dtheta-=(e.clientX-px)*0.005;cam.dphi=Math.max(0.25,Math.min(1.45,cam.dphi-(e.clientY-py)*0.004));px=e.clientX;py=e.clientY;});
+  addEventListener('pointerup',()=>dragging=false);
+  canvas.addEventListener('wheel',e=>{e.preventDefault();cam.drad=Math.max(5,Math.min(22,cam.drad+e.deltaY*0.01));},{passive:false});
+  r3d={inited:true,active:false,seated:false,renderer,scene,camera,cam,seats,you,
+    pulse:0,
+    onSit:null,
+    tick(){
+      if(!r3d.active)return;
+      // walk animation
+      if(walk){walk.t=Math.min(1,walk.t+0.025);const e=walk.t*walk.t*(3-2*walk.t);you.position.x=walk.from.x+(walk.to.x-walk.from.x)*e;you.position.z=walk.from.z+(walk.to.z-walk.from.z)*e;you.rotation.y=walk.s.rot; if(walk.t>=1){const s=walk.s;walk=null;r3d.seated=true;cam.dtx=s.x;cam.dtz=s.z+0.2;cam.dty=1.5;cam.drad=6.5;cam.dphi=1.15; if(r3d.onSit)r3d.onSit();}}
+      // ease camera
+      cam.theta+=(cam.dtheta-cam.theta)*0.08;cam.phi+=(cam.dphi-cam.phi)*0.08;cam.rad+=(cam.drad-cam.rad)*0.08;
+      cam.tx+=(cam.dtx-cam.tx)*0.08;cam.ty+=(cam.dty-cam.ty)*0.08;cam.tz+=(cam.dtz-cam.tz)*0.08;
+      camera.position.set(cam.tx+cam.rad*Math.sin(cam.phi)*Math.sin(cam.theta),cam.ty+cam.rad*Math.cos(cam.phi),cam.tz+cam.rad*Math.sin(cam.phi)*Math.cos(cam.theta));
+      camera.lookAt(cam.tx,cam.ty,cam.tz);
+      r3d.pulse+=0.04;seats.forEach((s,i)=>{if(s.glow&&s.glow.visible){s.glow.material.opacity=.55+Math.abs(Math.sin(r3d.pulse+i))*0.4;s.glow.rotation.y+=0.02;}});
+      renderer.render(scene,camera);requestAnimationFrame(r3d.tick);
+    }
+  };
+  function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+  addEventListener('resize',resize);resize();
+}
+function open3DRoom(){
+  r3dInit();
+  // reset state
+  r3d.seated=false;
+  document.getElementById('r3d-setup').style.display='none';
+  document.getElementById('r3d-timer').style.display='none';
+  document.getElementById('r3d-title').style.display='';
+  // camera overview
+  Object.assign(r3d.cam,{dtheta:0,dphi:1.0,drad:15,dtx:0,dty:1.2,dtz:0,theta:0,phi:1.0,rad:18,tx:0,ty:1.2,tz:0});
+  r3d.you.visible=false; r3d.seats.forEach(s=>{if(s.glow)s.glow.visible=!s.occupied;});
+  r3d.onSit=()=>{ document.getElementById('r3d-title').style.display='none'; document.getElementById('r3d-setup').style.display=''; };
+  r3d.active=true; showPage('page-3d'); r3d.tick();
+}
+function exit3D(){ r3d.active=false; if(r3dTimerInt)clearInterval(r3dTimerInt); showPage('page-home'); }
+// 时长设置 + 计时
+let r3dMins=25,r3dSec=0,r3dTimerInt=null;
+function r3dSetMins(v){r3dMins=+v;const h=Math.floor(v/60),m=v%60;document.getElementById('s3-time').textContent=(h>0?h+':':'')+String(m).padStart(2,'0')+(h>0?'':':00');}
+function r3dStartFocus(){
+  document.getElementById('r3d-setup').style.display='none';
+  document.getElementById('r3d-timer').style.display='';
+  r3dSec=0;clearInterval(r3dTimerInt);r3dUpdTimer();
+  r3dTimerInt=setInterval(()=>{r3dSec++;r3dUpdTimer();if(r3dSec>=r3dMins*60)clearInterval(r3dTimerInt);},1000);
+}
+function r3dUpdTimer(){const total=r3dMins*60,rem=Math.max(0,total-r3dSec);document.getElementById('r3d-tp-time').textContent=String(Math.floor(rem/60)).padStart(2,'0')+':'+String(rem%60).padStart(2,'0');document.getElementById('r3d-tp-fill').style.width=(r3dSec/total*100)+'%';}
+</script>
 </body>
 </html>
