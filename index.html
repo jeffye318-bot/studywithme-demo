@@ -353,7 +353,7 @@ body{font-family:'PingFang SC','Segoe UI',system-ui,sans-serif;background:#f5f0e
 .choose-title h2{font-size:48px;font-weight:900;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.5);letter-spacing:4px;}
 
 /* iso room — uses rendered library background image */
-.iso-room{position:fixed;inset:0;background:#1a0e08 url('room_library.webp?v=1') center/cover no-repeat;}
+.iso-room{position:fixed;inset:0;background:#1a0e08 url('room_library.webp?v=3') center/cover no-repeat;}
 .iso-floor-bg{
   position:absolute;inset:0;top:13%;
   background:
@@ -755,7 +755,7 @@ input[type=range]::-webkit-slider-thumb{
 
       <div class="scene-card" onclick="selectScene(3)">
         <div class="card-visual" style="background:linear-gradient(160deg,#f8e2cc,#f0c9a0)">
-          <img class="card-img" src="catcafe.webp" alt="猫咪咖啡馆"/>
+          <img class="card-img" src="fuji.webp?v=2" alt="富士山"/>
           <div class="card-live" data-i18n="live_tag">LIVE 现场</div>
           <button class="card-mute" onclick="toggleCardMute(this,event)">🔊</button>
         </div>
@@ -765,10 +765,10 @@ input[type=range]::-webkit-slider-thumb{
               <div class="card-avatars" id="av-3"></div>
               <div class="card-count">👥 <span id="cnt-3">612</span></div>
             </div>
-            <div class="card-flags">🐱🇯🇵🇰🇷🇺🇸</div>
+            <div class="card-flags">🗻🇯🇵🇰🇷🇨🇳</div>
           </div>
-          <div class="card-title" data-i18n="sc3_n">猫咪咖啡馆</div>
-          <div class="card-sub" data-i18n="sc3_s">Cat Café · 治愈陪伴</div>
+          <div class="card-title" data-i18n="sc3_n">富士山</div>
+          <div class="card-sub" data-i18n="sc3_s">Mt. Fuji · 静心独处</div>
           <div class="card-rooms">● 88 <span data-i18n="rooms_n">间教室</span></div>
           <button class="btn-enter" data-i18n="enter_scene">进入场景 →</button>
         </div>
@@ -1147,8 +1147,8 @@ const I18N={
   sc1_s:{zh:'Café · 温暖热闹',en:'Café · Warm & lively',ja:'カフェ · 暖かく賑やか',ko:'카페 · 따뜻하고 활기찬'},
   sc2_n:{zh:'汤泉中心',en:'Hot Spring',ja:'温泉センター',ko:'온천 센터'},
   sc2_s:{zh:'Hot Spring · 放松专注',en:'Hot Spring · Relax & focus',ja:'温泉 · リラックス集中',ko:'온천 · 편안한 집중'},
-  sc3_n:{zh:'猫咪咖啡馆',en:'Cat Café',ja:'猫カフェ',ko:'고양이 카페'},
-  sc3_s:{zh:'Cat Café · 治愈陪伴',en:'Cat Café · Cozy company',ja:'猫カフェ · 癒しの時間',ko:'고양이 카페 · 힐링'},
+  sc3_n:{zh:'富士山',en:'Mt. Fuji',ja:'富士山',ko:'후지산'},
+  sc3_s:{zh:'Mt. Fuji · 静心独处',en:'Mt. Fuji · Quiet solo focus',ja:'富士山 · 静かな集中',ko:'후지산 · 고요한 집중'},
 };
 const LANGS=[['zh','中'],['en','EN'],['ja','日'],['ko','한']];
 let lang='zh';try{const l=localStorage.getItem('fw_lang');if(l)lang=l;}catch(e){}
@@ -1175,10 +1175,10 @@ function renderLangBtn(){const b=document.getElementById('lang-btn');if(b)b.text
 
 /* ─── DATA ─── */
 const SCENES=[
-  {flag:'📚',name:'图书馆',img:'library.webp?v=2', room:'room_studyhall.webp?v=1', seatBg:'room_library.webp?v=1', seatChairs:'library', tint:'transparent', cnt:21870,need:0},
+  {flag:'📚',name:'图书馆',img:'library.webp?v=2', room:'room_studyhall.webp?v=1', seatBg:'room_library.webp?v=3', seatChairs:'library', tint:'transparent', cnt:21870,need:0},
   {flag:'☕',name:'咖啡厅',img:'cafe.webp?v=4',    room:'room_cafe.webp?v=4',      seatBg:'seat_cafe.webp?v=2', seatChairs:'cafe', tint:'transparent', cnt:8430, need:3},
   {flag:'♨️',name:'汤泉中心',img:'onsen.webp?v=2', room:'room_onsen.webp?v=2',     seatBg:'seat_onsen.webp', seatChairs:'onsen', tint:'transparent', cnt:5290, need:3},
-  {flag:'🐱',name:'猫咪咖啡馆',img:'catcafe.webp', room:'room_catcafe.webp', seatBg:'seat_catcafe.webp', seatChairs:'catcafe', tint:'transparent', cnt:6120, need:3},
+  {flag:'🗻',name:'富士山',img:'fuji.webp?v=2', room:'room_fuji.webp', seatBg:'seat_fuji.webp', seatChairs:'fuji', tint:'transparent', cnt:6120, need:0},
 ];
 let sceneIdx=0;
 // invited friends per scene (persisted) — invite enough to unlock a scene
@@ -1526,19 +1526,18 @@ const CHAIRS_LIBRARY=[
   {x:29,y:53,row:'side'},{x:37,y:53,row:'side'}, // 左桌近端（坐人）
   {x:62,y:53,row:'side'},{x:70,y:53,row:'side'}, // 右桌近端
 ];
-// 猫咪咖啡馆：坐标来自图3紫框（5 个位置）
-const CHAIRS_CATCAFE=[
-  {x:42,y:29,row:'top'}, {x:75,y:44,row:'top'}, {x:65,y:63,row:'top'},  // 空位
-  {x:45,y:53,row:'side'},{x:23,y:57,row:'side'},                         // 坐人
+// 富士山（单人）：1 个可选座位 @ 图3紫块中心 (45.3%, 47.2%)，无 NPC
+const CHAIRS_FUJI=[
+  {x:45.3,y:47.2,row:'top'},  // 唯一空位（桌后坐垫）
 ];
-const CHAIRSETS={cafe:CHAIRS_CAFE, onsen:CHAIRS_ONSEN, library:CHAIRS_LIBRARY, catcafe:CHAIRS_CATCAFE};
+const CHAIRSETS={cafe:CHAIRS_CAFE, onsen:CHAIRS_ONSEN, library:CHAIRS_LIBRARY, fuji:CHAIRS_FUJI};
 function buildSeats(){
   const ic=document.getElementById('iso-chars');
   const is=document.getElementById('iso-seats');
   ic.innerHTML='';is.innerHTML='';
   // 按场景设置选座背景 + 座位布局
   const sc=SCENES[sceneIdx];
-  document.querySelector('.iso-room').style.background=`#1a0e08 url('${sc.seatBg||'room_library.webp?v=1'}') 0 0 / 100% 100% no-repeat`;
+  document.querySelector('.iso-room').style.background=`#1a0e08 url('${sc.seatBg||'room_library.webp?v=3'}') 0 0 / 100% 100% no-repeat`;
   const CHAIRSET=(sc.seatChairs&&CHAIRSETS[sc.seatChairs])||CHAIRS;
 
   // seat the NPCs on the front/side chairs (visible, in front of the table)
@@ -1622,14 +1621,11 @@ function buildRoom(){
     [83,32,.64,0,false],
     [38,23,.67,1,false],
   ];
-  // 猫咪咖啡馆房间：坐标来自图5紫点（4 个）
-  const CATCAFE_LAYOUT=[
-    [42,34,.58,-1,true ], // 我
-    [70,40,.56,0,false],
-    [27,34,.58,1,false],
-    [57,32,.60,2,false],
+  // 富士山房间（单人，放大）：人物 @ 图5紫块中心 (60%, bottom~20%)，约画面 1/3 高
+  const FUJI_LAYOUT=[
+    [60,20,2.3,-1,true ], // 我（背对镜头面朝富士山，放大）
   ];
-  const LAYOUTS={cafe:CAFE_LAYOUT, onsen:ONSEN_LAYOUT, catcafe:CATCAFE_LAYOUT};
+  const LAYOUTS={cafe:CAFE_LAYOUT, onsen:ONSEN_LAYOUT, fuji:FUJI_LAYOUT};
   const layout = LAYOUTS[SCENES[sceneIdx].seatChairs] || DEFAULT_LAYOUT;
   const seats=layout.map(([lp,bp,sc,idx,back])=>[lp,bp,sc,(idx<0?me:FAKE[idx]),back]);
   roomPeople=seats.map(s=>s[3]);
